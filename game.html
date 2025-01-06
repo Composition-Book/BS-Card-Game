@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BS Card Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        #home-screen, #gameplay {
+            margin: 20px auto;
+        }
+        #home-screen button, #gameplay button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        #player-hand {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #fff;
+            display: inline-block;
+        }
+        #pile {
+            margin: 20px auto;
+            padding: 10px;
+            border: 2px dashed #999;
+            width: 200px;
+            height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fafafa;
+        }
+    </style>
+</head>
+<body>
+    <div id="home-screen">
+        <h1>Welcome to the BS Card Game!</h1>
+        <h2>Select Game Mode</h2>
+        <button onclick="startGame(3)">3-Player Mode</button>
+        <button onclick="startGame(4)">4-Player Mode</button>
+    </div>
+    <div id="gameplay" style="display: none;">
+        <h1>Game On!</h1>
+        <div id="pile">
+            <p>Discard Pile: 0 Cards</p>
+        </div>
+        <div id="player-hand">
+            <h3>Your Hand:</h3>
+            <div id="hand"></div>
+        </div>
+        <button onclick="playTurn()">Play a Card</button>
+        <button onclick="callBS()">Call BS!</button>
+    </div>
+    <script>
+        let players = [];
+        let playerHand = [];
+        let discardPile = [];
+
+        function startGame(playerCount) {
+            document.getElementById("home-screen").style.display = "none";
+            document.getElementById("gameplay").style.display = "block";
+
+            initializeGame(playerCount);
+            renderHand();
+            updatePile();
+        }
+
+        function initializeGame(playerCount) {
+            players = Array.from({ length: playerCount }, () => []);
+            let deck = generateDeck();
+
+            // Shuffle and distribute cards
+            while (deck.length) {
+                for (let i = 0; i < players.length; i++) {
+                    if (deck.length === 0) break;
+                    players[i].push(deck.pop());
+                }
+            }
+            playerHand = players[0]; // Assign the user's hand
+        }
+
+        function generateDeck() {
+            const suits = ["Hearts", "Diamonds", "Clubs", "Spades"];
+            const values = [
+                "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"
+            ];
+            const deck = [];
+
+            for (let suit of suits) {
+                for (let value of values) {
+                    deck.push(`${value} of ${suit}`);
+                }
+            }
+
+            return deck.sort(() => Math.random() - 0.5); // Shuffle
+        }
+
+        function renderHand() {
+            const handDiv = document.getElementById("hand");
+            handDiv.innerHTML = "";
+
+            playerHand.forEach((card, index) => {
+                const cardButton = document.createElement("button");
+                cardButton.textContent = card;
+                cardButton.onclick = () => playCard(index);
+                handDiv.appendChild(cardButton);
+            });
+        }
+
+        function playCard(cardIndex) {
+            const card = playerHand.splice(cardIndex, 1)[0];
+            discardPile.push(card);
+            renderHand();
+            updatePile();
+        }
+
+        function updatePile() {
+            const pileDiv = document.getElementById("pile");
+            pileDiv.innerHTML = `<p>Discard Pile: ${discardPile.length} Cards</p>`;
+        }
+
+        function playTurn() {
+            alert("Playing a turn... (Feature in progress!)");
+        }
+
+        function callBS() {
+            alert("Calling BS! (Feature in progress!)");
+        }
+    </script>
+</body>
+</html>
