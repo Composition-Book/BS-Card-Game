@@ -1,0 +1,110 @@
+import random
+
+class BSGame:
+    def __init__(self, num_players):
+        self.num_players = num_players
+        self.deck = self.create_deck()
+        self.players = self.deal_cards()
+        self.discard_pile = []
+        self.current_turn = 0  # Index of the current player
+        self.current_card_value = 1  # Starts with Aces (1)
+        self.turn_order = list(range(num_players))
+
+    def create_deck(self):
+        # Create a standard 52-card deck
+        suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
+        ranks = list(range(1, 14))  # 1 (Ace) to 13 (King)
+        deck = [(rank, suit) for rank in ranks for suit in suits]
+        random.shuffle(deck)
+        return deck
+
+    def deal_cards(self):
+        # Distribute cards evenly among players
+        hands = [[] for _ in range(self.num_players)]
+        for i, card in enumerate(self.deck):
+            hands[i % self.num_players].append(card)
+        return hands
+
+    def announce_current_card(self):
+        rank_names = {1: "Aces", 2: "Twos", 3: "Threes", 4: "Fours", 5: "Fives", 
+                      6: "Sixes", 7: "Sevens", 8: "Eights", 9: "Nines", 10: "Tens", 
+                      11: "Jacks", 12: "Queens", 13: "Kings"}
+        print(f"Current card value: {rank_names[self.current_card_value]}\n")
+
+    def play_cards(self, player_index, claimed_cards):
+        # Simulate a player playing 1-4 cards face down
+        if len(claimed_cards) > 4:
+            print("You can't play more than 4 cards!")
+            return False
+
+        for card in claimed_cards:
+            if card in self.players[player_index]:
+                self.players[player_index].remove(card)
+                self.discard_pile.append(card)
+            else:
+                print("Invalid play! You don't have that card.")
+                return False
+        return True
+
+    def call_bs(self, player_index):
+        # The player calls BS on the current play
+        last_play = self.discard_pile[-len(self.last_played_cards):]
+        truthful = all(card[0] == self.current_card_value for card in last_play)
+
+        if truthful:
+            print("BS call failed! The play was truthful.")
+            # Challenger picks up the discard pile
+            self.players[player_index].extend(self.discard_pile)
+            self.discard_pile = []
+        else:
+            print("BS call succeeded! The play was a lie.")
+            # Active player picks up the discard pile
+            self.players[self.current_turn].extend(self.discard_pile)
+            self.discard_pile = []
+
+    def next_turn(self):
+        # Move to the next turn
+        self.current_turn = (self.current_turn + 1) % self.num_players
+        self.current_card_value = self.current_card_value % 13 + 1
+
+    def check_winner(self):
+        # Check if any player has won
+        for i, hand in enumerate(self.players):
+            if len(hand) == 0:
+                print(f"Player {i + 1} wins the game!")
+                return True
+        return False
+
+    def play_game(self):
+        print("Starting BS Game!\n")
+        while True:
+            self.announce_current_card()
+            active_player = self.current_turn
+
+            print(f"Player {active_player + 1}'s turn.")
+            print(f"Your hand: {self.players[active_player]}\n")
+
+            # Simulate player playing cards (input or AI logic can be added here)
+            num_cards = random.randint(1, 4)
+            claimed_cards = random.sample(self.players[active_player], min(num_cards, len(self.players[active_player])))
+            print(f"Player {active_player + 1} claims to play {num_cards} cards.")
+
+            self.last_played_cards = claimed_cards  # Track the last play for BS calls
+            self.play_cards(active_player, claimed_cards)
+
+            # Simulate BS calls from other players
+            for i in range(self.num_players):
+                if i != active_player and random.choice([True, False]):
+                    print(f"Player {i + 1} calls BS!")
+                    self.call_bs(i)
+                    break
+
+            # Check for a winner
+            if self.check_winner():
+                break
+
+            self.next_turn()
+
+# Example: Start a 3-player game
+game = BSGame(num_players=3)
+game.play_game()
