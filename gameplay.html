@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BS Game Steps</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        header {
+            background: #333;
+            color: #fff;
+            padding: 1rem 0;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2, h3 {
+            color: #444;
+        }
+
+        h1 {
+            margin-bottom: 1rem;
+        }
+
+        ul {
+            margin: 0;
+            padding: 0 0 0 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        code {
+            background: #e4e4e4;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .step {
+            margin-bottom: 2rem;
+        }
+
+        .step h3 {
+            margin-top: 1rem;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: #555;
+        }
+
+        .highlight {
+            background: #dff0d8;
+            padding: 0.5rem;
+            border-left: 4px solid #3c763d;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+
+        .highlight code {
+            color: #3c763d;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>BS Game Steps</h1>
+    </header>
+
+    <div class="container">
+        <h2>Step-by-Step Breakdown</h2>
+
+        <div class="step">
+            <h3>1. Game Setup</h3>
+            <ul>
+                <li><strong>Create the Deck:</strong> Generate and shuffle a 52-card deck.</li>
+                <li><strong>Distribute Cards:</strong> Divide the deck among players, accounting for uneven splits.</li>
+                <li><strong>Set Player Order:</strong> Decide play order and initialize turn tracking.</li>
+                <li><strong>Initialize Game State:</strong> Create a discard pile and track the current rank and players' hands.</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>2. Gameplay Loop</h3>
+
+            <div class="highlight">
+                <strong>Player Turn:</strong> Claim a play, add cards to discard pile, and call "BS" when needed.
+            </div>
+
+            <h4>2.1 Player's Turn</h4>
+            <ul>
+                <li><strong>Claim a Play:</strong> Select and declare cards to play.</li>
+                <li><strong>Add Cards to Discard Pile:</strong> Update the discard pile and player hand.</li>
+            </ul>
+
+            <h4>2.2 "Call BS" Check</h4>
+            <ul>
+                <li><strong>Call Decision:</strong> Players decide to challenge the claim.</li>
+                <li><strong>Resolve BS:</strong> Verify the claim and assign the discard pile to the appropriate player.</li>
+            </ul>
+
+            <h4>2.3 Update Turn State</h4>
+            <ul>
+                <li><strong>Advance Turn:</strong> Update the current rank and move to the next player.</li>
+                <li><strong>Check for Winner:</strong> End the game if a player empties their hand.</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>3. Computer Player Logic</h3>
+            <ul>
+                <li><strong>Decide Cards to Play:</strong> Bluff or play matching cards based on strategy.</li>
+                <li><strong>Call BS Logic:</strong> Evaluate the likelihood of a false claim and decide whether to challenge.</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>4. Endgame</h3>
+            <ul>
+                <li><strong>Declare Winner:</strong> Announce the first player to empty their hand.</li>
+                <li><strong>Restart or Exit:</strong> Offer an option to replay or quit.</li>
+            </ul>
+        </div>
+
+        <h3>Example Gameplay</h3>
+        <p><strong>Start:</strong> Player 1 claims to play "1 Ace." Discard pile updated.</p>
+        <p><strong>Challenge:</strong> Player 2 calls BS, claim revealed false. Player 1 takes the pile.</p>
+        <p><strong>Next Turn:</strong> Move to Player 2 and update rank to "2."</p>
+    </div>
+
+    <footer class="footer">
+        <p>Created for GitHub - BS Game Simulation</p>
+    </footer>
+</body>
+</html>
