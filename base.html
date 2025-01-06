@@ -1,62 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BS Card Game</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BS Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .card {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px;
+            border: 1px solid black;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .selected {
+            background-color: lightblue;
+        }
+
+        #hand, #discard-pile {
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin-top: 20px;
+        }
+
+        #game-info {
+            margin: 20px 0;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>BS Card Game</h1>
-    <p>Can you bluff your way to victory?</p>
-  </header>
+    <h1>BS Game</h1>
 
-  <main>
-    <section id="game-status">
-      <p><strong>Current Rank:</strong> <span id="current-rank">Ace</span></p>
-      <p><strong>Current Player:</strong> <span id="current-player">Player 1</span></p>
-    </section>
+    <div id="game-info">
+        <p>Current Player: <span id="current-player">You</span></p>
+        <p>Current Rank: <span id="current-rank">Ace</span></p>
+    </div>
 
-    <section id="player-hand">
-      <h2>Your Hand</h2>
-      <div id="cards">
+    <h2>Your Hand</h2>
+    <div id="hand">
         <!-- Cards will be dynamically added here -->
-      </div>
-      <button id="play-card-btn">Play Selected Cards</button>
-      <button id="call-bs-btn">Call BS</button>
-    </section>
+    </div>
 
-    <section id="discard-pile">
-      <h2>Discard Pile</h2>
-      <div id="pile">
-        <!-- Discarded cards will be displayed here -->
-      </div>
-    </section>
+    <button id="play-cards" disabled>Play Cards</button>
 
-    <section id="opponent-info">
-      <h2>Opponent Hands</h2>
-      <div id="opponents">
-        <div class="opponent">
-          <h3>Player 2</h3>
-          <p>Cards Left: <span class="cards-left">13</span></p>
-        </div>
-        <div class="opponent">
-          <h3>Player 3</h3>
-          <p>Cards Left: <span class="cards-left">13</span></p>
-        </div>
-        <div class="opponent">
-          <h3>Player 4</h3>
-          <p>Cards Left: <span class="cards-left">13</span></p>
-        </div>
-      </div>
-    </section>
-  </main>
+    <h2>Discard Pile</h2>
+    <div id="discard-pile">
+        <!-- Discarded cards will appear here -->
+    </div>
 
-  <footer>
-    <p>&copy; 2025 BS Card Game</p>
-  </footer>
+    <script>
+        const ranks = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"];
+        let currentRankIndex = 0;
+        let hand = ["Ace of Hearts", "2 of Clubs", "3 of Diamonds", "4 of Spades", "5 of Hearts"];
+        let discardPile = [];
 
-  <script src="script.js"></script>
+        const handDiv = document.getElementById("hand");
+        const discardPileDiv = document.getElementById("discard-pile");
+        const playCardsButton = document.getElementById("play-cards");
+        const currentRankSpan = document.getElementById("current-rank");
+
+        let selectedCards = [];
+
+        function updateHand() {
+            handDiv.innerHTML = "";
+            hand.forEach((card, index) => {
+                const cardDiv = document.createElement("div");
+                cardDiv.className = "card";
+                cardDiv.textContent = card;
+                cardDiv.onclick = () => toggleCardSelection(index);
+                if (selectedCards.includes(index)) {
+                    cardDiv.classList.add("selected");
+                }
+                handDiv.appendChild(cardDiv);
+            });
+        }
+
+        function updateDiscardPile() {
+            discardPileDiv.innerHTML = discardPile.join(", ");
+        }
+
+        function toggleCardSelection(index) {
+            if (selectedCards.includes(index)) {
+                selectedCards = selectedCards.filter(i => i !== index);
+            } else if (selectedCards.length < 4) {
+                selectedCards.push(index);
+            }
+            playCardsButton.disabled = selectedCards.length === 0;
+            updateHand();
+        }
+
+        function playCards() {
+            const playedCards = selectedCards.map(index => hand[index]);
+            discardPile = discardPile.concat(playedCards);
+            hand = hand.filter((_, index) => !selectedCards.includes(index));
+
+            selectedCards = [];
+            currentRankIndex = (currentRankIndex + 1) % ranks.length;
+            currentRankSpan.textContent = ranks[currentRankIndex];
+
+            playCardsButton.disabled = true;
+
+            updateHand();
+            updateDiscardPile();
+        }
+
+        playCardsButton.onclick = playCards;
+
+        // Initialize game
+        updateHand();
+        updateDiscardPile();
+    </script>
 </body>
 </html>
+
