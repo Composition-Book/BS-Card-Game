@@ -152,6 +152,48 @@
             });
         });
 
+<style>
+    /* Other styles remain the same */
+
+    .committed-area {
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-start;
+        gap: 5px; /* Space between cards */
+        pointer-events: none; /* Prevent dragging committed cards */
+    }
+</style>
+
+<script>
+    // Other scripts remain the same
+
+    document.getElementById("playCardsButton").addEventListener("click", () => {
+        const discardBox = document.getElementById("discard");
+        const discardArea = discardBox.querySelector(".committed-area");
+
+        const cardsToCommit = Array.from(discardBox.querySelectorAll(".card"));
+
+        // Check if more than 4 cards are selected
+        if (cardsToCommit.length > 4) {
+            alert("You can only discard a maximum of 4 cards at once.");
+            return; // Prevent committing
+        }
+
+        // Commit the cards
+        cardsToCommit.forEach(card => {
+            card.classList.add("committed-card");
+            card.classList.remove("card", "red", "black", "dragging");
+            card.textContent = ""; // Remove text
+            discardArea.appendChild(card); // Move to committed area
+            committedCards.push(card); // Keep track
+        });
+
+        // Update discard counter
+        discardBox.querySelector(".discard-counter").textContent = committedCards.length;
+    });
+</script>
+
+        
         // Shuffle the deck
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
