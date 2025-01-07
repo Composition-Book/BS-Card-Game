@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Section 1: Metadata and Page Setup -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Card Game</title>
+    
+    <!-- Section 2: Styles -->
     <style>
+        /* Section 2.1: Global Styles */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
@@ -14,6 +18,7 @@
             gap: 20px;
         }
 
+        /* Section 2.2: Button Styles */
         .buttons {
             display: flex;
             flex-direction: column;
@@ -35,6 +40,7 @@
             background-color: #0056b3;
         }
 
+        /* Section 2.3: Box and Card Styles */
         .container {
             display: flex;
             gap: 20px;
@@ -84,6 +90,7 @@
             height: 40px;
         }
 
+        /* Section 2.4: Special Styles for Hidden, Dragging, and Committed Cards */
         .hidden {
             background-color: gray;
             color: gray;
@@ -124,11 +131,14 @@
     </style>
 </head>
 <body>
+    <!-- Section 3: Button Controls -->
     <div class="buttons">
         <button id="bsButton">BS!</button>
         <button id="nextTurnButton">Next turn!</button>
         <button id="playCardsButton">Play Cards!</button>
     </div>
+
+    <!-- Section 4: Card Containers -->
     <div class="container">
         <div id="box1" class="box"></div>
         <div id="box2" class="box"></div>
@@ -140,11 +150,12 @@
     </div>
 
     <script>
+        // Section 5: Deck Creation
         const suits = ["♥", "♦", "♣", "♠"];
         const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
         const deck = [];
 
-        // Create the deck with emojis and suit colors
+        // Section 6: Populate and Color Deck
         suits.forEach((suit, suitIndex) => {
             ranks.forEach(rank => {
                 const isRed = suitIndex < 2; // Hearts and Diamonds are red
@@ -152,7 +163,7 @@
             });
         });
 
-        // Shuffle the deck
+        // Section 7: Shuffle Deck
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -161,21 +172,21 @@
         }
         shuffle(deck);
 
-        // Divide the deck into boxes
+        // Section 8: Divide Deck
         const box1Cards = deck.slice(0, 17);
         const box2Cards = deck.slice(17, 34);
         const box3Cards = deck.slice(34, 52);
-        const discardCards = []; // Cards in discard drag area
-        const committedCards = []; // Committed discard cards
+        const discardCards = [];
+        const committedCards = [];
 
-        // Render cards in boxes
+        // Section 9: Render Cards in Boxes
         const renderBox = (boxId, cards, isHidden) => {
             const boxDiv = document.getElementById(boxId);
-            boxDiv.innerHTML = ""; // Clear existing cards
+            boxDiv.innerHTML = "";
             cards.forEach(card => {
                 const cardDiv = document.createElement("div");
                 cardDiv.className = "card";
-                cardDiv.draggable = true; // Allow drag for all cards
+                cardDiv.draggable = true;
 
                 if (isHidden) {
                     cardDiv.classList.add("hidden");
@@ -191,7 +202,7 @@
             });
         };
 
-        // Handle dragging
+        // Section 10: Dragging Mechanics
         let draggedCard = null;
 
         function handleDragStart(event) {
@@ -199,76 +210,49 @@
             event.target.classList.add("dragging");
         }
 
-        function handleDragEnd(event) {c
+        function handleDragEnd(event) {
             event.target.classList.remove("dragging");
             draggedCard = null;
         }
 
-        // Handle dropping
         function handleDrop(event) {
             event.preventDefault();
             if (draggedCard && event.target.classList.contains("box")) {
-                const fromBox = draggedCard.parentElement.id;
-                const toBox = event.target.id;
-
                 event.target.appendChild(draggedCard);
             }
         }
 
         function handleDragOver(event) {
-            event.preventDefault(); // Allow dropping
+            event.preventDefault();
         }
 
-       // Play Cards (Commit to discard)
-document.getElementById("playCardsButton").addEventListener("click", () => {
-    const discardBox = document.getElementById("discard");
-    const discardArea = discardBox.querySelector(".committed-area");
+        // Section 11: Play Cards Button Logic
+        document.getElementById("playCardsButton").addEventListener("click", () => {
+            const discardBox = document.getElementById("discard");
+            const discardArea = discardBox.querySelector(".committed-area");
 
-    const cardsToCommit = Array.from(discardBox.children).filter(card =>
-        card.classList.contains("card")
-    );
+            const cardsToCommit = Array.from(discardBox.children).filter(card =>
+                card.classList.contains("card")
+            );
 
-    // Prevent discarding more than 4 cards
-    if (cardsToCommit.length > 4) {
-        alert("You can only discard a maximum of 4 cards at once.");
-        return; // Stop further execution
-    }
+            cardsToCommit.forEach(card => {
+                card.classList.add("committed-card");
+                card.classList.remove("card", "red", "black", "dragging");
+                card.textContent = "";
+                discardArea.appendChild(card);
+                committedCards.push(card);
+            });
 
-    // Prompt for the declared rank (e.g., 2, 3, J, etc.)
-    const declaredRank = prompt("What rank are you playing? (e.g., 2, 3, J, etc.)");
+            discardBox.querySelector(".discard-counter").textContent = committedCards.length;
+        });
 
-    // Count how many cards of this rank are already in the discard pile
-    const currentCount = committedCards.filter(card => card.dataset.rank === declaredRank).length;
-    const newCount = currentCount + cardsToCommit.length;
+        // Section 12: Add Event Listeners to Boxes
+        document.querySelectorAll(".box").forEach(box => {
+            box.addEventListener("dragover", handleDragOver);
+            box.addEventListener("drop", handleDrop);
+        });
 
-    // Check if the total exceeds 4
-    if (newCount > 4) {
-        alert(`Invalid move! A total of ${newCount} ${declaredRank}s exceeds the maximum of 4 cards.`);
-        return; // Stop further execution
-    }
-
-    // Commit the cards if valid
-    cardsToCommit.forEach(card => {
-        card.classList.add("committed-card");
-        card.classList.remove("card", "red", "black", "dragging");
-        card.textContent = ""; // Remove text
-        card.dataset.rank = declaredRank; // Add rank metadata for future validation
-        discardArea.appendChild(card); // Move to committed area
-        committedCards.push(card); // Keep track
-    });
-
-    // Update discard counter
-    discardBox.querySelector(".discard-counter").textContent = committedCards.length;
-});
-
-// Add event listeners to boxes
-document.querySelectorAll(".box").forEach(box => {
-    box.addEventListener("dragover", handleDragOver);
-    box.addEventListener("drop", handleDrop);
-});
-
-
-        // Render the boxes
+        // Section 13: Initial Render
         renderBox("box1", box1Cards, false); // Box 1 is face-up
         renderBox("box2", box2Cards, true);  // Box 2 is face-down
         renderBox("box3", box3Cards, true);  // Box 3 is face-down
