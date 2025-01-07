@@ -58,7 +58,6 @@
             flex-wrap: wrap;
             align-content: flex-start;
             overflow: hidden;
-            position: relative;
         }
 
         .discard-box {
@@ -129,13 +128,6 @@
             width: 30px;
             height: 40px;
         }
-
-        .play-field {
-            margin: 10px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
     </style>
 </head>
 <body>
@@ -144,6 +136,7 @@
         <button id="bsButton">BS!</button>
         <button id="playCardsButton">Play Cards!</button>
         <button id="dealCardsButton">Deal Cards</button>
+        <button id="refreshButton">Refresh</button>
     </div>
 
     <!-- Section 4: Card Containers -->
@@ -156,9 +149,6 @@
             <div class="committed-area"></div>
         </div>
     </div>
-
-    <!-- Play field where cards are dragged -->
-    <div id="playField" class="play-field"></div>
 
     <!-- Small box to display the current card -->
     <div id="currentCardDisplay" style="width: 100px; height: 50px; border: 1px solid #000; text-align: center; font-size: 18px; padding: 10px;">
@@ -187,6 +177,11 @@
             }
         }
 
+        // Section 8: Divide Deck
+        let box1Cards = [];
+        let box2Cards = [];
+        let box3Cards = [];
+
         // Section 9: Render Cards in Boxes
         const renderBox = (boxId, cards, isHidden) => {
             const boxDiv = document.getElementById(boxId);
@@ -210,80 +205,60 @@
         // Section 10: Dragging Mechanics
         let draggedCard = null;
 
-        function handleDragStart(event) {
-            draggedCard = event.target;
-            event.target.classList.add("dragging");
+        function handleDragStart(e) {
+            draggedCard = e.target;
+            draggedCard.classList.add("dragging");
         }
 
-        function handleDragEnd(event) {
-            event.target.classList.remove("dragging");
+        function handleDragEnd() {
+            draggedCard.classList.remove("dragging");
             draggedCard = null;
         }
 
-        function handleDrop(event) {
-            event.preventDefault();
-            if (draggedCard && event.target.classList.contains("box")) {
-                event.target.appendChild(draggedCard);
+        function handleDrop(e) {
+            if (e.target.classList.contains("box")) {
+                e.target.appendChild(draggedCard);
+                draggedCard.classList.remove("dragging");
             }
         }
 
-        function handleDragOver(event) {
-            event.preventDefault();
+        function handleDragOver(e) {
+            e.preventDefault();
         }
 
-        // Section 11: Deal Cards Button Logic
+        // Section 11: Button Actions
         document.getElementById("dealCardsButton").addEventListener("click", () => {
             shuffle(deck);
-
-            // Divide the shuffled deck evenly between the three boxes
-            const box1Cards = deck.slice(0, 17);
-            const box2Cards = deck.slice(17, 34);
-            const box3Cards = deck.slice(34, 52);
-
-            // Render the cards in their respective boxes
-            renderBox("box1", box1Cards, false); // Box 1 is face-up
-            renderBox("box2", box2Cards, true); // Box 2 is face-down
-            renderBox("box3", box3Cards, true); // Box 3 is face-down
-
-            // Hide the Deal button after distributing cards
-            document.getElementById("dealCardsButton").style.display = "none";
+            box1Cards = deck.slice(0, 17);
+            box2Cards = deck.slice(17, 34);
+            box3Cards = deck.slice(34, 51);
+            renderBox("box1", box1Cards, true);
+            renderBox("box2", box2Cards, true);
+            renderBox("box3", box3Cards, true);
         });
 
-        // Section 12: Current Card Logic (Order of Cards)
-        let currentCardIndex = 0;
-
-        document.getElementById("currentCardDisplay").style.display = 'block'; // Make the current card display visible
-
+        // Section 12: Play Cards Button
         document.getElementById("playCardsButton").addEventListener("click", () => {
-            // Move all cards in the play field to the committed discard area
-            const playField = document.getElementById("playField");
-            const committedArea = document.querySelector("#discard .committed-area");
-
-            while (playField.firstChild) {
-                const card = playField.firstChild;
-                card.classList.add("hidden"); // Make card face-down
-                committedArea.appendChild(card);
-            }
-
-            // Condense the committed discard area (stack them)
-            committedArea.style.gap = "-5px";
-
-            // Update the discard counter
-            const discardCount = committedArea.querySelectorAll(".card").length;
-            document.querySelector(".discard-counter").textContent = discardCount;
-
-            // Move to the next card
-            if (currentCardIndex < ranks.length) {
-                const currentCardElement = document.getElementById("currentCard");
-                currentCardElement.textContent = ranks[currentCardIndex];
-                currentCardIndex++;
-            }
+            // Logic for play cards goes here.
+            // Simulate the effect of moving cards to discard pile, e.g., from the field box to discard.
         });
 
-        // Section 15: Add Event Listeners to Boxes
-        document.querySelectorAll(".box").forEach(box => {
-            box.addEventListener("dragover", handleDragOver);
-            box.addEventListener("drop", handleDrop);
+        // Section 13: BS! Button
+        document.getElementById("bsButton").addEventListener("click", () => {
+            // Logic for BS! button action.
+        });
+
+        // Section 14: Refresh Button
+        document.getElementById("refreshButton").addEventListener("click", () => {
+            // Reset game state.
+            box1Cards = [];
+            box2Cards = [];
+            box3Cards = [];
+            deck.length = 0;
+            renderBox("box1", box1Cards, false);
+            renderBox("box2", box2Cards, false);
+            renderBox("box3", box3Cards, false);
+            document.getElementById("discard").innerHTML = "";
         });
     </script>
 </body>
