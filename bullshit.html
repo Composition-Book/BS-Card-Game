@@ -6,14 +6,24 @@
   <title>Card Game</title>
   <style>
     /* Styling for game elements */
-    .box { width: 200px; height: 100px; border: 2px solid black; margin: 10px; padding: 10px; display: inline-block; vertical-align: top; }
+    .box { width: 220px; height: 120px; border: 2px solid black; margin: 10px; padding: 10px; display: inline-block; vertical-align: top; overflow-x: auto; }
     .deck-box { background-color: lightgray; }
     .player-box { background-color: lightblue; }
     .field-box { background-color: lightgreen; }
     .discard-pile { background-color: lightcoral; }
     .button { padding: 10px 20px; margin: 10px; cursor: pointer; }
-    .card { width: 50px; height: 70px; border: 1px solid black; display: inline-block; text-align: center; margin: 5px; cursor: pointer; }
-    .hidden { background-color: gray; }
+    .card {
+      width: 50px; height: 70px; border-radius: 8px; display: inline-block; text-align: center; margin: 5px; cursor: pointer;
+      background-color: white;
+      border: 1px solid black;
+    }
+    .card.hidden {
+      background-color: gray;
+    }
+    .card.red { color: red; }
+    .card .suit { font-size: 24px; }
+    .card .value { font-size: 18px; }
+    #field { width: 100%; height: 100px; }
   </style>
 </head>
 <body>
@@ -41,7 +51,7 @@
     <div id="human-cards"></div>
   </div>
 
-  <div class="box field-box" id="field-box">
+  <div class="box field-box" id="field-box" ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
     <p>Field (4 Cards Max)</p>
     <div id="field"></div>
   </div>
@@ -101,101 +111,88 @@
         currentPlayer = (currentPlayer + 1) % 4;
       }
 
-      renderCards();
+      // Render cards in player boxes
+      renderPlayerCards();
     }
 
     // Function to render cards in player boxes
-    function renderCards() {
-      const humanBox = document.getElementById('human-cards');
-      humanBox.innerHTML = '';
-      playerCards.human.forEach(card => {
-        humanBox.appendChild(createCardElement(card));
-      });
-
-      ['player1', 'player2', 'player3'].forEach(player => {
-        const box = document.getElementById(`${player}-cards`);
-        box.innerHTML = '';
+    function renderPlayerCards() {
+      Object.keys(playerCards).forEach(player => {
+        const playerDiv = document.getElementById(`${player}-cards`);
+        playerDiv.innerHTML = '';
         playerCards[player].forEach(card => {
-          box.appendChild(createCardElement(card));
+          const cardElement = createCardElement(card, player !== 'human');
+          playerDiv.appendChild(cardElement);
         });
       });
-
-      document.getElementById('deck').innerHTML = ''; // Deck is hidden now
     }
 
     // Function to create a card element
-    function createCardElement(card) {
-      const cardDiv = document.createElement('div');
-      cardDiv.classList.add('card');
-      cardDiv.textContent = `${card.value} ${card.suit}`;
-      cardDiv.draggable = true;
-      cardDiv.addEventListener('dragstart', handleDragStart);
-      cardDiv.addEventListener('dragend', handleDragEnd);
-      return cardDiv;
+    function createCardElement(card, isHidden = false) {
+      const cardElement = document.createElement('div');
+      cardElement.classList.add('card');
+      if (isHidden) cardElement.classList.add('hidden');
+      
+      const valueElement = document.createElement('div');
+      valueElement.classList.add('value');
+      valueElement.textContent = card.value;
+
+      const suitElement = document.createElement('div');
+      suitElement.classList.add('suit');
+      suitElement.textContent = card.suit;
+
+      if (card.suit === '♦' || card.suit === '♥') {
+        cardElement.classList.add('red');
+      }
+
+      cardElement.appendChild(valueElement);
+      cardElement.appendChild(suitElement);
+      cardElement.setAttribute('draggable', true);
+      cardElement.ondragstart = (event) => handleDragStart(event, card);
+      cardElement.ondragend = handleDragEnd;
+
+      return cardElement;
     }
 
-    // Function to handle drag start
-    function handleDragStart(e) {
-      e.dataTransfer.setData('text', e.target.textContent);
+    // Drag and drop handlers
+    function handleDragStart(event, card) {
+      event.dataTransfer.setData('text', JSON.stringify(card));
     }
 
-    // Function to handle drag end
-    function handleDragEnd() {}
+    function handleDragOver(event) {
+      event.preventDefault();
+    }
 
-    // Function to handle card drop
-    function handleDrop(e) {
-      e.preventDefault();
-      const cardText = e.dataTransfer.getData('text');
-      const [value, suit] = cardText.split(' ');
-
-      if (e.target.id === 'field-box' && document.getElementById('field').childElementCount < 4) {
-        const card = { value, suit };
-        discardPile.push(card);
-        renderDiscardPile();
-        renderCards();
+    function handleDrop(event) {
+      event.preventDefault();
+      const cardData = event.dataTransfer.getData('text');
+      const card = JSON.parse(cardData);
+      
+      if (document.getElementById('field').children.length < 4) {
+        moveCardToField(card);
       }
     }
 
-    // Function to render discard pile
-    function renderDiscardPile() {
-      const discardBox = document.getElementById('discard');
-      discardBox.innerHTML = '';
-      discardPile.forEach(card => {
-        const cardDiv = createCardElement(card);
-        cardDiv.classList.add('hidden'); // Cards in discard pile are hidden
-        discardBox.appendChild(cardDiv);
-      });
-      document.getElementById('discard-total').textContent = discardPile.length;
+    // Function to move card to the field
+    function moveCardToField(card) {
+      const fieldDiv = document.getElementById('field');
+      const cardElement = createCardElement(card, false);
+      fieldDiv.appendChild(cardElement);
+      updateDiscardTotal();
     }
 
-    // Function to handle BS! call
-    function handleBS() {
-      const isLie = Math.random() > 0.5; // Random for demo purposes
-      if (isLie) {
-        // Move all discard pile cards to computer's hand (simulating a lie)
-        playerCards.player1.push(...discardPile);
-      } else {
-        // Move all discard pile cards to human player hand
-        playerCards.human.push(...discardPile);
-      }
-      discardPile = []; // Clear discard pile
-      renderCards();
-      renderDiscardPile();
+    // Function to update the discard total
+    function updateDiscardTotal() {
+      const discardDiv = document.getElementById('discard');
+      discardDiv.innerHTML = field.innerHTML;
+      document.getElementById('discard-total').textContent = field.children.length;
     }
 
-    // Function to handle refresh
-    function refreshGame() {
-      location.reload();
-    }
-
-    // Event Listeners for buttons
+    // Event listener for buttons
     document.getElementById('deal-button').addEventListener('click', dealCards);
-    document.getElementById('play-button').addEventListener('click', renderDiscardPile);
-    document.getElementById('bs-button').addEventListener('click', handleBS);
-    document.getElementById('refresh-button').addEventListener('click', refreshGame);
 
     // Initial setup
-    renderCards();
+    renderPlayerCards();
 
   </script>
 </body>
