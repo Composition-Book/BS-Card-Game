@@ -24,8 +24,7 @@
             flex-direction: column;
             align-items: center;
             gap: 10px;
-            margin-top: 20px; /* Ensure the buttons are spaced and visible */
-}
+        }
 
         button {
             padding: 10px 20px;
@@ -35,7 +34,6 @@
             background-color: #007BFF;
             color: white;
             cursor: pointer;
-            z-index: 100; /* Ensures the button is on top */
         }
 
         button:hover {
@@ -47,10 +45,8 @@
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
-           justify-content: center; /* Centers the card containers */
-
         }
-        
+
         .box {
             border: 2px solid black;
             border-radius: 5px;
@@ -173,45 +169,98 @@
             });
         });
 
-// Section 5: Deck Creation
-const suits = ["♥", "♦", "♣", "♠"];
-const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
-const deck = [];
-
-// Section 6: Populate and Color Deck
-suits.forEach((suit, suitIndex) => {
-  ranks.forEach(rank => {
-    const isRed = suitIndex < 2; // Hearts and Diamonds are red
-    deck.push({ suit, rank, isRed });
-  });
-});
-
-// Section 7: Shuffle Deck
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+<script>
+  // Section 7: Shuffle Deck
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
   }
-}
 
-// Section 11: Deal Cards Button Logic
-document.getElementById("dealCardsButton").addEventListener("click", () => {
-  shuffle(deck);
+  const deck = [
+    { rank: 'A', suit: '♠', isRed: false },
+    { rank: '2', suit: '♠', isRed: false },
+    { rank: '3', suit: '♠', isRed: false },
+    { rank: '4', suit: '♠', isRed: false },
+    { rank: '5', suit: '♠', isRed: false },
+    { rank: '6', suit: '♠', isRed: false },
+    { rank: '7', suit: '♠', isRed: false },
+    { rank: '8', suit: '♠', isRed: false },
+    { rank: '9', suit: '♠', isRed: false },
+    { rank: '10', suit: '♠', isRed: false },
+    { rank: 'J', suit: '♠', isRed: false },
+    { rank: 'Q', suit: '♠', isRed: false },
+    { rank: 'K', suit: '♠', isRed: false },
+    // Add all other cards here...
+  ];
 
-  // Divide the shuffled deck evenly between the three boxes
-  box1Cards = deck.slice(0, 17);
-  box2Cards = deck.slice(17, 34);
-  box3Cards = deck.slice(34, 52);
+  // Section 8: Divide Deck
+  let box1Cards = [];
+  let box2Cards = [];
+  let box3Cards = [];
 
-  // Render the cards in their respective boxes
-  renderBox("box1", box1Cards, false); // Box 1 is face-up
-  renderBox("box2", box2Cards, true); // Box 2 is face-down
-  renderBox("box3", box3Cards, true); // Box 3 is face-down
+  // Section 9: Render Cards in Boxes
+  const renderBox = (boxId, cards, isHidden) => {
+    const boxDiv = document.getElementById(boxId);
+    boxDiv.innerHTML = "";
+    cards.forEach(card => {
+      const cardDiv = document.createElement("div");
+      cardDiv.className = "card";
+      cardDiv.draggable = true;
+      if (isHidden) {
+        cardDiv.classList.add("hidden");
+      } else {
+        cardDiv.classList.add(card.isRed ? "red" : "black");
+        cardDiv.textContent = `${card.rank}${card.suit}`;
+      }
+      cardDiv.addEventListener("dragstart", handleDragStart);
+      cardDiv.addEventListener("dragend", handleDragEnd);
+      boxDiv.appendChild(cardDiv);
+    });
+  };
 
-  // Hide the Deal button after distributing cards
-  document.getElementById("dealCardsButton").style.display = "none";
-});
+  // Section 10: Dragging Mechanics
+  let draggedCard = null;
 
+  function handleDragStart(event) {
+    draggedCard = event.target;
+    event.target.classList.add("dragging");
+  }
+
+  function handleDragEnd(event) {
+    event.target.classList.remove("dragging");
+    draggedCard = null;
+  }
+
+  function handleDrop(event) {
+    event.preventDefault();
+    if (draggedCard && event.target.classList.contains("box")) {
+      event.target.appendChild(draggedCard);
+    }
+  }
+
+  function handleDragOver(event) {
+    event.preventDefault();
+  }
+
+  // Section 11: Deal Cards Button Logic
+  document.getElementById("dealCardsButton").addEventListener("click", () => {
+    shuffle(deck);
+
+    // Divide the shuffled deck evenly between the three boxes
+    box1Cards = deck.slice(0, 17);
+    box2Cards = deck.slice(17, 34);
+    box3Cards = deck.slice(34, 52);
+
+    // Render the cards in their respective boxes
+    renderBox("box1", box1Cards, false); // Box 1 is face-up
+    renderBox("box2", box2Cards, true); // Box 2 is face-down
+    renderBox("box3", box3Cards, true); // Box 3 is face-down
+
+    // Hide the Deal button after distributing cards
+    document.getElementById("dealCardsButton").style.display = "none";
+  });
 
   // Section 12: Add Event Listeners to Boxes
   document.querySelectorAll(".box").forEach(box => {
