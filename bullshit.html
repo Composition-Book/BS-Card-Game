@@ -102,16 +102,25 @@
       createDeck();
       shuffleDeck();
 
-      // Split deck into 4 parts
-      let currentPlayer = 0;
-      while (deck.length) {
-        const card = deck.pop();
-        const player = currentPlayer === 0 ? 'human' : `player${currentPlayer}`;
-        playerCards[player].push(card);
-        currentPlayer = (currentPlayer + 1) % 4;
+      // Reset the player cards before dealing
+      playerCards = { player1: [], player2: [], player3: [], human: [] };
+
+      // Deal 5 cards to each player
+      for (let i = 0; i < 5; i++) {
+        suits.forEach(suit => {
+          values.forEach(value => {
+            if (deck.length > 0) {
+              const card = deck.pop();
+              if (i === 0) playerCards.human.push(card);
+              else if (i === 1) playerCards.player1.push(card);
+              else if (i === 2) playerCards.player2.push(card);
+              else if (i === 3) playerCards.player3.push(card);
+            }
+          });
+        });
       }
 
-      // Render cards in player boxes
+      // Render the cards in each player box
       renderPlayerCards();
     }
 
@@ -193,7 +202,6 @@
 
     // Initial setup
     renderPlayerCards();
-
   </script>
 </body>
 </html>
