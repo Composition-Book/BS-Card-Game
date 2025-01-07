@@ -257,17 +257,19 @@
         });
 
         // Section 12: Current Card Logic (Order of Cards)
-        let currentCardIndex = 0;
-        document.getElementById("currentCardDisplay").style.display = 'block'; // Make the current card display visible
+let currentCardIndex = 0;
+document.getElementById("currentCardDisplay").style.display = 'block'; // Make the current card display visible
 
-        document.getElementById("playCardsButton").addEventListener("click", () => {
-            // Play the next card in order
-            if (currentCardIndex < ranks.length) {
-                const currentCardElement = document.getElementById("currentCard");
-                currentCardElement.textContent = ranks[currentCardIndex];
-                currentCardIndex++;
-            }
-        });
+document.getElementById("playCardsButton").addEventListener("click", () => {
+    // Play the next card in order (and loop back to 'A' after 'K')
+    const currentCardElement = document.getElementById("currentCard");
+
+    // Set the current card text
+    currentCardElement.textContent = ranks[currentCardIndex];
+
+    // Increment currentCardIndex and loop back to 0 when it exceeds the length
+    currentCardIndex = (currentCardIndex + 1) % ranks.length;  // This ensures the index loops
+});
 
         // Section 13: BS! Button Logic
         let lastPlay = [];
@@ -293,37 +295,43 @@
             lastPlay = [];
         });
 
-// Section 14: Play Cards Button Logic
+// Section 14: Play Cards Button Logic (Restructured)
 document.getElementById("playCardsButton").addEventListener("click", () => {
-    const currentCard = document.getElementById("currentCard").textContent;
+    const currentCardElement = document.getElementById("currentCard");
     const discardPile = document.getElementById("discard");
-
+    const committedArea = discardPile.querySelector(".committed-area");  // The target area for committed cards
+    
+    const currentCard = currentCardElement.textContent;
     if (currentCard !== "") {
-        // Create a new div for the current card in the committed discard area
+        // 1. Create a new div for the current card and add it to the committed discard
         const newCardDiv = document.createElement("div");
-        newCardDiv.className = "card"; // Add your card's styles here (e.g., hidden, etc.)
+        newCardDiv.className = "card"; // Add your card's styles (could add classes for visual effects)
         newCardDiv.textContent = currentCard;
 
-        // Add the new card to the committed discard area
-        discardPile.querySelector('.committed-area').appendChild(newCardDiv);
+        // 2. Append the new card to the committed discard area
+        committedArea.appendChild(newCardDiv);
 
-        // Update the discard counter to reflect the number of cards in the committed discard area
-        discardPile.querySelector('.discard-counter').textContent = discardPile.querySelector(".committed-area").children.length;
+        // 3. Update the discard pile counter
+        const discardCounter = discardPile.querySelector('.discard-counter');
+        discardCounter.textContent = committedArea.children.length;
 
-        // Remove the current card's graphic from the original area
-        const originalCardElement = document.getElementById("currentCard");
-        originalCardElement.textContent = ''; // Clear the text content of the original card
-        originalCardElement.style.display = 'none'; // Hide the original card element
+        // 4. Hide the current card from the display area
+        currentCardElement.textContent = '';  // Clear the text content
+        currentCardElement.style.display = 'none'; // Hide the element entirely
 
-        // Update the index to move to the next card (if available)
+        // 5. Move to the next card in the sequence (if available)
         currentCardIndex++;
         if (currentCardIndex < ranks.length) {
-            // Update the current card display with the new card
-            originalCardElement.textContent = ranks[currentCardIndex];
-            originalCardElement.style.display = 'block'; // Show the next card
+            // 5.1 Update the current card's text and make it visible again
+            currentCardElement.textContent = ranks[currentCardIndex];
+            currentCardElement.style.display = 'block'; // Show the new card
+        } else {
+            // If no more cards, we can handle that scenario (maybe disable the button or something)
+            console.log("No more cards left!");
         }
     }
 });
+
 
         // Section 15: Add Event Listeners to Boxes
         document.querySelectorAll(".box").forEach(box => {
