@@ -1,124 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Card Drag-and-Drop</title>
-  <style>
-    .box {
-      width: 200px;
-      height: 300px;
-      border: 1px solid black;
-      margin: 10px;
-      display: inline-block;
-      vertical-align: top;
-      position: relative;
-    }
-
-    .card {
-      width: 50px;
-      height: 70px;
-      background-color: white;
-      border: 1px solid black;
-      position: absolute;
-      cursor: grab;
-      text-align: center;
-      line-height: 70px;
-      font-size: 12px;
-    }
-
-    .hidden {
-      background-color: gray;
-      border: none;
-      color: gray;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Game</title>
+    <style>
+        .container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .box {
+            width: 30%;
+            min-height: 300px;
+            border: 2px solid black;
+            border-radius: 10px;
+            padding: 10px;
+            background-color: #f0f0f0;
+        }
+        .card {
+            width: 50px;
+            height: 70px;
+            border: 1px solid black;
+            border-radius: 5px;
+            margin: 5px;
+            text-align: center;
+            line-height: 70px;
+            background-color: white;
+            cursor: grab;
+        }
+        .hidden {
+            background-color: gray;
+            color: transparent;
+        }
+    </style>
 </head>
 <body>
-  <h1>Card Drag-and-Drop</h1>
-  <div id="box1" class="box"></div>
-  <div id="box2" class="box"></div>
-  <div id="box3" class="box"></div>
+    <h1>Card Game</h1>
+    <div class="container">
+        <div id="box1" class="box"></div>
+        <div id="box2" class="box"></div>
+        <div id="box3" class="box"></div>
+    </div>
 
-  <script>
-    const suits = ["Hearts", "Diamonds", "Clubs", "Spades"];
-    const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+    <script>
+        // Create a deck of 52 cards
+        const suits = ["Hearts", "Diamonds", "Clubs", "Spades"];
+        const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+        const deck = [];
 
-    // Generate cards with unique identities
-    const cards = [];
-    let cardId = 1;
-    for (const suit of suits) {
-      for (const rank of ranks) {
-        cards.push({ id: cardId++, rank, suit });
-      }
-    }
-
-    // Shuffle cards
-    for (let i = cards.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [cards[i], cards[j]] = [cards[j], cards[i]];
-    }
-
-    // Divide cards between three boxes
-    const box1Cards = cards.slice(0, 17);
-    const box2Cards = cards.slice(17, 34);
-    const box3Cards = cards.slice(34);
-
-    // Render cards for box1 (visible)
-    const box1 = document.getElementById("box1");
-    box1Cards.forEach(card => {
-      const cardElement = document.createElement("div");
-      cardElement.classList.add("card");
-      cardElement.textContent = `${card.rank} of ${card.suit}`;
-      cardElement.setAttribute("draggable", "true");
-      cardElement.dataset.cardId = card.id;
-
-      // Drag and drop functionality
-      cardElement.addEventListener("dragstart", event => {
-        event.dataTransfer.setData("text/plain", card.id);
-      });
-
-      box1.appendChild(cardElement);
-    });
-
-    // Render hidden cards for box2 and box3
-    function renderHiddenCards(box, cards) {
-      cards.forEach(card => {
-        const cardElement = document.createElement("div");
-        cardElement.classList.add("card", "hidden");
-        cardElement.textContent = "Hidden";
-        cardElement.dataset.cardId = card.id;
-        cardElement.setAttribute("draggable", "true");
-
-        cardElement.addEventListener("dragstart", event => {
-          event.dataTransfer.setData("text/plain", card.id);
+        // Generate cards with unique identities
+        suits.forEach(suit => {
+            ranks.forEach(rank => {
+                deck.push({ id: `${rank} of ${suit}`, rank, suit });
+            });
         });
 
-        box.appendChild(cardElement);
-      });
-    }
-
-    const box2 = document.getElementById("box2");
-    renderHiddenCards(box2, box2Cards);
-
-    const box3 = document.getElementById("box3");
-    renderHiddenCards(box3, box3Cards);
-
-    // Allow dropping in all boxes
-    document.querySelectorAll(".box").forEach(box => {
-      box.addEventListener("dragover", event => {
-        event.preventDefault();
-      });
-
-      box.addEventListener("drop", event => {
-        event.preventDefault();
-        const cardId = event.dataTransfer.getData("text/plain");
-        const cardElement = document.querySelector(`[data-card-id='${cardId}']`);
-        if (cardElement) {
-          box.appendChild(cardElement);
+        // Shuffle the deck
+        for (let i = deck.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [deck[i], deck[j]] = [deck[j], deck[i]];
         }
-      });
-    });
-  </script>
+
+        // Distribute cards among the three boxes
+        const box1 = deck.slice(0, 18);
+        const box2 = deck.slice(18, 35);
+        const box3 = deck.slice(35);
+
+        // Function to create and append cards to a box
+        function createCardElements(cards, boxElement, visible) {
+            cards.forEach(card => {
+                const cardElement = document.createElement("div");
+                cardElement.classList.add("card");
+                cardElement.textContent = visible ? card.id : "";
+                if (!visible) cardElement.classList.add("hidden");
+
+                // Set draggable attributes
+                cardElement.setAttribute("draggable", true);
+                cardElement.dataset.id = card.id;
+
+                cardElement.addEventListener("dragstart", event => {
+                    event.dataTransfer.setData("text", card.id);
+                });
+
+                boxElement.appendChild(cardElement);
+            });
+        }
+
+        // Add cards to the boxes
+        createCardElements(box1, document.getElementById("box1"), true); // Visible cards
+        createCardElements(box2, document.getElementById("box2"), false); // Hidden cards
+        createCardElements(box3, document.getElementById("box3"), false); // Hidden cards
+
+        // Enable drag-and-drop functionality
+        const boxes = document.querySelectorAll(".box");
+        boxes.forEach(box => {
+            box.addEventListener("dragover", event => {
+                event.preventDefault();
+            });
+
+            box.addEventListener("drop", event => {
+                event.preventDefault();
+                const cardId = event.dataTransfer.getData("text");
+                const cardElement = document.querySelector(`[data-id='${cardId}']`);
+                event.target.appendChild(cardElement);
+            });
+        });
+    </script>
 </body>
 </html>
