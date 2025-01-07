@@ -260,17 +260,34 @@
         let currentCardIndex = 0;
         document.getElementById("currentCardDisplay").style.display = 'block'; // Make the current card display visible
 
-        document.getElementById("playCardsButton").addEventListener("click", () => {
-            if (currentCardIndex < ranks.length) {
-                const currentCardElement = document.getElementById("currentCard");
-                currentCardElement.textContent = ranks[currentCardIndex];
-                currentCardIndex++;
-            } else {
-                currentCardIndex = 0;  // Reset to "A" after reaching the end
-                const currentCardElement = document.getElementById("currentCard");
-                currentCardElement.textContent = ranks[currentCardIndex];  // Reset to "A"
-            }
-        });
+       document.getElementById("playCardsButton").addEventListener("click", () => {
+    // Move all cards from the main discard area to the committed discard area
+    const discardArea = document.getElementById("discard");
+    const committedArea = document.querySelector(".committed-area");
+
+    // Move the cards (hide them by adding the 'hidden' class)
+    const discardCards = discardArea.querySelectorAll(".card");
+    discardCards.forEach(card => {
+        card.classList.add("hidden");  // Hide the cards
+        committedArea.appendChild(card);  // Move to the committed discard
+    });
+
+    // Update the discard count
+    const discardCounter = document.querySelector(".discard-counter");
+    discardCounter.textContent = committedArea.querySelectorAll(".card").length;
+
+    // Clear the main discard area
+    discardArea.innerHTML = "";
+
+    // Update the current card (e.g., move to the next card in the sequence)
+    if (currentCardIndex < ranks.length - 1) {
+        currentCardIndex++;
+    } else {
+        currentCardIndex = 0;  // Reset to "A" after reaching the end
+    }
+    document.getElementById("currentCard").textContent = ranks[currentCardIndex];
+});
+
 
         // Section 13: BS! Button Logic
         let lastPlay = [];
