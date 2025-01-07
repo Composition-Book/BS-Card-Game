@@ -243,32 +243,66 @@
             document.getElementById("dealCardsButton").style.display = "none";
         });
 
-        // Section 12: Play Cards Button Logic
-        document.getElementById("playCardsButton").addEventListener("click", () => {
-            // Logic for playing cards goes here
-            const currentCardDisplay = document.getElementById("currentCardDisplay");
-            const currentCardElement = document.getElementById("currentCard");
-            let randomCard = deck[Math.floor(Math.random() * deck.length)];
-            
-            currentCardElement.textContent = `${randomCard.rank}${randomCard.suit}`;
-            currentCardDisplay.style.display = 'block'; // Make the current card display visible
-        });
+        // Section 12: Current Card Logic (Order of Cards)
+        let currentCardIndex = 0;
 
-        // Section 13: BS! Button Logic
-        let discardPileCount = 0;
-        document.getElementById("bsButton").addEventListener("click", () => {
-            // Assume the last play is a lie, and update the discard pile accordingly
-            const lastPlayWasTrue = Math.random() < 0.5; // Simulating a random outcome for the example
-            if (!lastPlayWasTrue) {
-                discardPileCount++;
-                document.querySelector(".discard-counter").textContent = discardPileCount;
-                alert("BS! The last play was a lie! The discard pile is updated.");
-            } else {
-                alert("The last play was true. No change to the discard pile.");
+        document.getElementById("currentCardDisplay").style.display = 'block'; // Make the current card display visible
+
+        document.getElementById("playCardsButton").addEventListener("click", () => {
+            // Play the next card in order
+            if (currentCardIndex < ranks.length) {
+                const currentCardElement = document.getElementById("currentCard");
+                currentCardElement.textContent = ranks[currentCardIndex];
+                currentCardIndex++;
             }
         });
 
-        // Section 14: Add Event Listeners to Boxes
+        // Section 13: BS! Button Logic
+        let lastPlay = [];
+        let lastPlayer = null;
+
+        document.getElementById("bsButton").addEventListener("click", () => {
+            const currentCard = document.getElementById("currentCard").textContent;
+
+            // Check if the last play is valid based on the current card
+            let isValid = true;
+            lastPlay.forEach(card => {
+                if (card.rank !== currentCard) {
+                    isValid = false;
+                }
+            });
+
+            // If invalid, move discard pile to the opponent's hand
+            if (!isValid) {
+                alert('BS! The last play was invalid.');
+                // Implement logic to move the discard pile into the other player's hand
+            }
+
+            // Reset last play
+            lastPlay = [];
+        });
+
+        // Section 14: Play Cards Button Logic
+        document.getElementById("playCardsButton").addEventListener("click", () => {
+            const currentCard = document.getElementById("currentCard").textContent;
+            const discardPile = document.getElementById("discard");
+
+            // Create a new card div and add it to the discard pile (face-down)
+            const cardDiv = document.createElement("div");
+            cardDiv.className = "card hidden";
+            cardDiv.textContent = currentCard;
+
+            discardPile.querySelector('.committed-area').appendChild(cardDiv);
+            discardPile.querySelector('.discard-counter').textContent = discardPile.querySelectorAll(".card").length;
+
+            // Condense the discard pile
+            lastPlay.push({ rank: currentCard });
+
+            // Hide the current card from display
+            document.getElementById("currentCard").textContent = '';
+        });
+
+        // Section 15: Add Event Listeners to Boxes
         document.querySelectorAll(".box").forEach(box => {
             box.addEventListener("dragover", handleDragOver);
             box.addEventListener("drop", handleDrop);
