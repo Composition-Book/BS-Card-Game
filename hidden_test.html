@@ -115,9 +115,8 @@
             width: 100%;
             height: 100%;
             display: flex;
-            align-items: flex-end;
-            justify-content: flex-start;
-            gap: -20px; /* Overlapping effect */
+            flex-wrap: wrap;
+            gap: 5px;
             pointer-events: none; /* Prevent dragging committed cards */
         }
 
@@ -254,17 +253,25 @@
 
         // Update automatically when cards are played
         document.getElementById("playCardsButton").addEventListener("click", () => {
-            // If the current card is available, move it to the discard pile
-            const currentCard = ranks[currentCardIndex];
             const discardPile = document.getElementById("discard");
+            const committedArea = discardPile.querySelector('.committed-area');
+            const discardCounter = discardPile.querySelector('.discard-counter');
+
+            // If there are more than 4 cards, display error
+            if (committedArea.childNodes.length > 4) {
+                alert("Error: You can only discard up to 4 cards at once!");
+                return;
+            }
 
             // Move the current card to the discard pile (as a face-down card)
+            const currentCard = ranks[currentCardIndex];
             const cardDiv = document.createElement("div");
             cardDiv.className = "card hidden";
             cardDiv.textContent = currentCard;
+            committedArea.appendChild(cardDiv);
 
-            discardPile.querySelector('.committed-area').appendChild(cardDiv);
-            discardPile.querySelector('.discard-counter').textContent = discardPile.querySelectorAll(".card").length;
+            // Update the discard counter
+            discardCounter.textContent = committedArea.childNodes.length;
 
             // Condense the discard pile
             currentCardIndex++;
