@@ -78,6 +78,7 @@
     <!-- Buttons -->
     <div class="buttons">
         <button id="dealCardsButton">Deal Cards</button>
+        <button id="resetButton">Reset Deck</button>
     </div>
 
     <!-- Card Containers -->
@@ -101,11 +102,8 @@
             });
         });
 
-        console.log("Deck created:", deck); // Debugging: Check if the deck is created correctly
-
-        // Section 7: Shuffle Deck
+        // Function to shuffle the deck
         function shuffle(array) {
-            console.log("Shuffling deck..."); // Debugging: Check if shuffle is triggered
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [array[i], array[j]] = [array[j], array[i]]; // Swap elements
@@ -127,12 +125,10 @@
                 }
                 boxDiv.appendChild(cardDiv);
             });
-            console.log(`Rendered cards in ${boxId}:`, cards); // Debugging: Check cards in the box
         };
 
         // Section 11: Deal Cards Button Logic
         document.getElementById("dealCardsButton").addEventListener("click", () => {
-            console.log("Deal Cards button clicked..."); // Debugging: Check if the button click is detected
             shuffle(deck);
 
             // Divide the shuffled deck into three boxes
@@ -147,6 +143,20 @@
 
             // Hide the Deal button after dealing cards
             document.getElementById("dealCardsButton").style.display = "none";
+        });
+
+        // Reset Button Logic
+        document.getElementById("resetButton").addEventListener("click", () => {
+            deck.length = 0; // Reset deck
+            suits.forEach((suit, suitIndex) => {
+                ranks.forEach(rank => {
+                    const isRed = suitIndex < 2;
+                    deck.push({ suit, rank, isRed });
+                });
+            });
+
+            // Re-enable the deal button
+            document.getElementById("dealCardsButton").style.display = "inline-block";
         });
     </script>
 
