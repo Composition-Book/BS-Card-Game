@@ -197,16 +197,16 @@
         // Section 9: Render Cards in Boxes
         const renderBox = (boxId, cards, isHidden) => {
             const boxDiv = document.getElementById(boxId);
-            boxDiv.innerHTML = ""; // Clear the box before rendering new cards
+            boxDiv.innerHTML = "";
             cards.forEach(card => {
                 const cardDiv = document.createElement("div");
                 cardDiv.className = "card";
                 cardDiv.draggable = true;
                 if (isHidden) {
-                    cardDiv.classList.add("hidden"); // Hide the card
+                    cardDiv.classList.add("hidden");
                 } else {
-                    cardDiv.classList.add(card.isRed ? "red" : "black"); // Color the card based on suit
-                    cardDiv.textContent = `${card.rank}${card.suit}`; // Display card rank and suit
+                    cardDiv.classList.add(card.isRed ? "red" : "black");
+                    cardDiv.textContent = `${card.rank}${card.suit}`;
                 }
                 cardDiv.addEventListener("dragstart", handleDragStart);
                 cardDiv.addEventListener("dragend", handleDragEnd);
@@ -230,12 +230,12 @@
         function handleDrop(event) {
             event.preventDefault();
             if (draggedCard && event.target.classList.contains("box")) {
-                event.target.appendChild(draggedCard); // Move the dragged card to the dropped box
+                event.target.appendChild(draggedCard);
             }
         }
 
         function handleDragOver(event) {
-            event.preventDefault(); // Allow dropping
+            event.preventDefault();
         }
 
         // Section 11: Deal Cards Button Logic
