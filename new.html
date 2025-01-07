@@ -193,6 +193,8 @@
         let box1Cards = [];
         let box2Cards = [];
         let box3Cards = [];
+        let discardCards = [];
+        let committedDiscardCards = [];
 
         // Section 9: Render Cards in Boxes
         const renderBox = (boxId, cards, isHidden) => {
@@ -208,8 +210,6 @@
                     cardDiv.classList.add(card.isRed ? "red" : "black");
                     cardDiv.textContent = `${card.rank}${card.suit}`;
                 }
-                cardDiv.addEventListener("dragstart", handleDragStart);
-                cardDiv.addEventListener("dragend", handleDragEnd);
                 boxDiv.appendChild(cardDiv);
             });
         };
@@ -260,34 +260,35 @@
         let currentCardIndex = 0;
         document.getElementById("currentCardDisplay").style.display = 'block'; // Make the current card display visible
 
-       document.getElementById("playCardsButton").addEventListener("click", () => {
-    // Move all cards from the main discard area to the committed discard area
-    const discardArea = document.getElementById("discard");
-    const committedArea = document.querySelector(".committed-area");
+        document.getElementById("playCardsButton").addEventListener("click", () => {
+            // Move all cards in the discard area to committed discard
+            committedDiscardCards = committedDiscardCards.concat(discardCards);
+            discardCards = [];
 
-    // Move the cards (hide them by adding the 'hidden' class)
-    const discardCards = discardArea.querySelectorAll(".card");
-    discardCards.forEach(card => {
-        card.classList.add("hidden");  // Hide the cards
-        committedArea.appendChild(card);  // Move to the committed discard
-    });
+            // Flush main discard
+            const discardCount = document.querySelector(".discard-counter");
+            discardCount.textContent = committedDiscardCards.length;
 
-    // Update the discard count
-    const discardCounter = document.querySelector(".discard-counter");
-    discardCounter.textContent = committedArea.querySelectorAll(".card").length;
+            // Update the current card count (looping through ranks)
+            if (currentCardIndex < ranks.length - 1) {
+                currentCardIndex++;
+            } else {
+                currentCardIndex = 0;  // Reset to "A" after reaching the end
+            }
 
-    // Clear the main discard area
-    discardArea.innerHTML = "";
+            // Update the current card display
+            const currentCardElement = document.getElementById("currentCard");
+            currentCardElement.textContent = ranks[currentCardIndex];
 
-    // Update the current card (e.g., move to the next card in the sequence)
-    if (currentCardIndex < ranks.length - 1) {
-        currentCardIndex++;
-    } else {
-        currentCardIndex = 0;  // Reset to "A" after reaching the end
-    }
-    document.getElementById("currentCard").textContent = ranks[currentCardIndex];
-});
-
+            // Re-render the committed discard cards (hidden cards)
+            const committedArea = document.querySelector(".committed-area");
+            committedArea.innerHTML = ""; // Clear existing committed cards
+            committedDiscardCards.forEach(() => {
+                const committedCardDiv = document.createElement("div");
+                committedCardDiv.className = "committed-card";
+                committedArea.appendChild(committedCardDiv);
+            });
+        });
 
         // Section 13: BS! Button Logic
         let lastPlay = [];
