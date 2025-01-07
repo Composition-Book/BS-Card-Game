@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Section 1: Metadata and Page Setup -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Game</title>
+    
+    <!-- Section 2: Styles -->
+    <style>
+        /* Section 2.1: Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Section 2.2: Button Styles */
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Section 2.3: Box and Card Styles */
+        .container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .box {
+            border: 2px solid black;
+            border-radius: 5px;
+            margin: 10px;
+            padding: 10px;
+            width: 300px;
+            height: 400px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            overflow: hidden;
+        }
+
+        .discard-box {
+            border: 2px solid red;
+            position: relative;
+        }
+
+        .discard-counter {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: white;
+            padding: 2px 5px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .card {
+            margin: 2px;
+            padding: 5px;
+            border: 1px solid black;
+            border-radius: 3px;
+            background-color: white;
+            text-align: center;
+            font-size: 14px;
+            cursor: grab;
+            user-select: none;
+            width: 30px;
+            height: 40px;
+        }
+
+        /* Section 2.4: Special Styles for Hidden, Dragging, and Committed Cards */
+        .hidden {
+            background-color: gray;
+            color: gray;
+        }
+
+        .red {
+            color: red;
+        }
+
+        .black {
+            color: black;
+        }
+
+        .dragging {
+            opacity: 0.5;
+        }
+
+        .committed-area {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-start;
+            gap: -20px; /* Overlapping effect */
+            pointer-events: none; /* Prevent dragging committed cards */
+        }
+
+        .committed-card {
+            background-color: gray;
+            color: transparent;
+            border: 1px solid black;
+            width: 30px;
+            height: 40px;
+        }
+
+       </style>
+</head>
+<body>
+    <!-- Section 3: Button Controls -->
+    <div class="buttons">
+        <button id="bsButton">BS!</button>
+        <button id="playCardsButton">Play Cards!</button>
+        <button id="dealCardsButton">Deal Cards</button>
+    </div>
+
+    <!-- Section 4: Card Containers -->
+    <div class="container">
+        <div id="box1" class="box"></div>
+        <div id="box2" class="box"></div>
+        <div id="box3" class="box"></div>
+        <div id="discard" class="box discard-box">
+            <div class="discard-counter">0</div>
+            <div class="committed-area"></div>
+        </div>
+    </div>
+
+    <!-- Small box to display the current card -->
+    <div id="currentCardDisplay" style="width: 100px; height: 50px; border: 1px solid #000; text-align: center; font-size: 18px; padding: 10px;">
+        Current Card: <span id="currentCard">A</span>
+    </div>
