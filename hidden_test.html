@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BS Card Game</title>
+    <title>Card Game</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -102,17 +102,31 @@
         }
 
         .committed-area {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: 100%;
+            height: 100%;
             display: flex;
-            flex-wrap: wrap;
-            align-content: flex-start;
-            gap: 5px; /* Adjust space between cards */
+            align-items: flex-end;
+            justify-content: flex-start;
+            gap: -20px; /* Overlapping effect */
             pointer-events: none; /* Prevent dragging committed cards */
+        }
+
+        .committed-card {
+            background-color: gray;
+            color: transparent;
+            border: 1px solid black;
+            width: 30px;
+            height: 40px;
         }
     </style>
 </head>
 <body>
     <div class="buttons">
         <button id="bsButton">BS!</button>
+        <button id="nextTurnButton">Next turn!</button>
         <button id="playCardsButton">Play Cards!</button>
     </div>
     <div class="container">
@@ -129,9 +143,8 @@
         const suits = ["♥", "♦", "♣", "♠"];
         const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
         const deck = [];
-        let currentTurn = 0; // Tracks the current turn and rank being played
 
-        // Create and shuffle the deck
+        // Create the deck with emojis and suit colors
         suits.forEach((suit, suitIndex) => {
             ranks.forEach(rank => {
                 const isRed = suitIndex < 2; // Hearts and Diamonds are red
@@ -139,6 +152,7 @@
             });
         });
 
+        // Shuffle the deck
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -147,20 +161,21 @@
         }
         shuffle(deck);
 
-        // Divide deck into three boxes
+        // Divide the deck into boxes
         const box1Cards = deck.slice(0, 17);
         const box2Cards = deck.slice(17, 34);
         const box3Cards = deck.slice(34, 52);
-        const discardPile = [];
-        const committedCards = [];
+        const discardCards = []; // Cards in discard drag area
+        const committedCards = []; // Committed discard cards
 
+        // Render cards in boxes
         const renderBox = (boxId, cards, isHidden) => {
             const boxDiv = document.getElementById(boxId);
             boxDiv.innerHTML = ""; // Clear existing cards
             cards.forEach(card => {
                 const cardDiv = document.createElement("div");
                 cardDiv.className = "card";
-                cardDiv.draggable = true;
+                cardDiv.draggable = true; // Allow drag for all cards
 
                 if (isHidden) {
                     cardDiv.classList.add("hidden");
@@ -169,47 +184,94 @@
                     cardDiv.textContent = `${card.rank}${card.suit}`;
                 }
 
-                cardDiv.dataset.rank = card.rank; // Save rank for validation
+                cardDiv.addEventListener("dragstart", handleDragStart);
+                cardDiv.addEventListener("dragend", handleDragEnd);
+
                 boxDiv.appendChild(cardDiv);
             });
         };
 
-        // Play Cards
-        document.getElementById("playCardsButton").addEventListener("click", () => {
-            const discardBox = document.getElementById("discard");
-            const cardsToCommit = Array.from(discardBox.querySelectorAll(".card"));
+        // Handle dragging
+        let draggedCard = null;
 
-            if (cardsToCommit.length > 4) {
-                alert("You can only discard a maximum of 4 cards.");
-                return;
+        function handleDragStart(event) {
+            draggedCard = event.target;
+            event.target.classList.add("dragging");
+        }
+
+        function handleDragEnd(event) {c
+            event.target.classList.remove("dragging");
+            draggedCard = null;
+        }
+
+        // Handle dropping
+        function handleDrop(event) {
+            event.preventDefault();
+            if (draggedCard && event.target.classList.contains("box")) {
+                const fromBox = draggedCard.parentElement.id;
+                const toBox = event.target.id;
+
+                event.target.appendChild(draggedCard);
             }
+        }
 
-            cardsToCommit.forEach(card => {
-                discardPile.push(card.dataset.rank); // Add card rank to discard pile
-                committedCards.push(card);
-                card.remove(); // Remove from discard box
-            });
+        function handleDragOver(event) {
+            event.preventDefault(); // Allow dropping
+        }
 
-            document.querySelector(".discard-counter").textContent = committedCards.length;
-            currentTurn = (currentTurn + 1) % ranks.length; // Move to the next rank
-        });
+       // Play Cards (Commit to discard)
+document.getElementById("playCardsButton").addEventListener("click", () => {
+    const discardBox = document.getElementById("discard");
+    const discardArea = discardBox.querySelector(".committed-area");
 
-        // Call BS!
-        document.getElementById("bsButton").addEventListener("click", () => {
-            const lastPlayedRank = ranks[currentTurn];
-            const countInDiscard = discardPile.filter(rank => rank === lastPlayedRank).length;
+    const cardsToCommit = Array.from(discardBox.children).filter(card =>
+        card.classList.contains("card")
+    );
 
-            if (countInDiscard > 4) {
-                alert("BS! Correct call. The discard pile is revealed!");
-            } else {
-                alert("BS! Incorrect call. The discard pile remains.");
-            }
-        });
+    // Prevent discarding more than 4 cards
+    if (cardsToCommit.length > 4) {
+        alert("You can only discard a maximum of 4 cards at once.");
+        return; // Stop further execution
+    }
 
-        // Initial render
-        renderBox("box1", box1Cards, false);
-        renderBox("box2", box2Cards, true);
-        renderBox("box3", box3Cards, true);
+    // Prompt for the declared rank (e.g., 2, 3, J, etc.)
+    const declaredRank = prompt("What rank are you playing? (e.g., 2, 3, J, etc.)");
+
+    // Count how many cards of this rank are already in the discard pile
+    const currentCount = committedCards.filter(card => card.dataset.rank === declaredRank).length;
+    const newCount = currentCount + cardsToCommit.length;
+
+    // Check if the total exceeds 4
+    if (newCount > 4) {
+        alert(`Invalid move! A total of ${newCount} ${declaredRank}s exceeds the maximum of 4 cards.`);
+        return; // Stop further execution
+    }
+
+    // Commit the cards if valid
+    cardsToCommit.forEach(card => {
+        card.classList.add("committed-card");
+        card.classList.remove("card", "red", "black", "dragging");
+        card.textContent = ""; // Remove text
+        card.dataset.rank = declaredRank; // Add rank metadata for future validation
+        discardArea.appendChild(card); // Move to committed area
+        committedCards.push(card); // Keep track
+    });
+
+    // Update discard counter
+    discardBox.querySelector(".discard-counter").textContent = committedCards.length;
+});
+
+// Add event listeners to boxes
+document.querySelectorAll(".box").forEach(box => {
+    box.addEventListener("dragover", handleDragOver);
+    box.addEventListener("drop", handleDrop);
+});
+
+
+        // Render the boxes
+        renderBox("box1", box1Cards, false); // Box 1 is face-up
+        renderBox("box2", box2Cards, true);  // Box 2 is face-down
+        renderBox("box3", box3Cards, true);  // Box 3 is face-down
     </script>
 </body>
 </html>
