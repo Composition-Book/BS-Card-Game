@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Drag and Drop</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            margin: 20px;
+        }
+
+        .box {
+            width: 200px;
+            height: 300px;
+            border: 2px dashed #333;
+            border-radius: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            padding: 10px;
+            background-color: #f9f9f9;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card {
+            width: 40px;
+            height: 60px;
+            margin: 5px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background-color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            cursor: grab;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .card:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body>
+    <div id="box1" class="box"></div>
+    <div id="box2" class="box"></div>
+    <div id="box3" class="box"></div>
+
+    <script>
+        const suits = ['♥', '♦', '♠', '♣'];
+        const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        let cards = [];
+
+        // Create the deck of cards
+        for (const suit of suits) {
+            for (const rank of ranks) {
+                cards.push(`${rank}${suit}`);
+            }
+        }
+
+        // Shuffle the cards
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+        shuffle(cards);
+
+        // Distribute cards into boxes
+        const box1 = document.getElementById('box1');
+        const box2 = document.getElementById('box2');
+        const box3 = document.getElementById('box3');
+
+        cards.slice(0, 17).forEach(card => {
+            const cardElement = createCardElement(card);
+            box1.appendChild(cardElement);
+        });
+
+        cards.slice(17, 34).forEach(card => {
+            const cardElement = createCardElement(card);
+            box2.appendChild(cardElement);
+        });
+
+        cards.slice(34).forEach(card => {
+            const cardElement = createCardElement(card);
+            box3.appendChild(cardElement);
+        });
+
+        // Create a card element
+        function createCardElement(cardText) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.textContent = cardText;
+            card.draggable = true;
+
+            card.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', cardText);
+                e.target.classList.add('dragging');
+            });
+
+            card.addEventListener('dragend', (e) => {
+                e.target.classList.remove('dragging');
+            });
+
+            return card;
+        }
+
+        // Add drag-and-drop functionality to the boxes
+        const boxes = document.querySelectorAll('.box');
+
+        boxes.forEach(box => {
+            box.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                box.style.backgroundColor = '#e0e0e0';
+            });
+
+            box.addEventListener('dragleave', () => {
+                box.style.backgroundColor = '#f9f9f9';
+            });
+
+            box.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const cardText = e.dataTransfer.getData('text/plain');
+                const draggingCard = document.querySelector(`.card.dragging`);
+                if (draggingCard) {
+                    box.appendChild(draggingCard);
+                }
+                box.style.backgroundColor = '#f9f9f9';
+            });
+        });
+    </script>
+</body>
+</html>
