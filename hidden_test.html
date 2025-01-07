@@ -134,7 +134,6 @@
     <!-- Section 3: Button Controls -->
     <div class="buttons">
         <button id="bsButton">BS!</button>
-        <button id="nextTurnButton">Next turn!</button>
         <button id="playCardsButton">Play Cards!</button>
         <button id="dealCardsButton">Deal Cards</button>
     </div>
@@ -255,12 +254,25 @@
             currentCardDisplay.style.display = 'block'; // Make the current card display visible
         });
 
-        // Section 13: Add Event Listeners to Boxes
+        // Section 13: BS! Button Logic
+        let discardPileCount = 0;
+        document.getElementById("bsButton").addEventListener("click", () => {
+            // Assume the last play is a lie, and update the discard pile accordingly
+            const lastPlayWasTrue = Math.random() < 0.5; // Simulating a random outcome for the example
+            if (!lastPlayWasTrue) {
+                discardPileCount++;
+                document.querySelector(".discard-counter").textContent = discardPileCount;
+                alert("BS! The last play was a lie! The discard pile is updated.");
+            } else {
+                alert("The last play was true. No change to the discard pile.");
+            }
+        });
+
+        // Section 14: Add Event Listeners to Boxes
         document.querySelectorAll(".box").forEach(box => {
             box.addEventListener("dragover", handleDragOver);
             box.addEventListener("drop", handleDrop);
         });
-
     </script>
 
 </body>
