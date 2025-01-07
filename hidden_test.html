@@ -9,16 +9,15 @@
             font-family: Arial, sans-serif;
             margin: 20px;
             display: flex;
-            flex-direction: row;
-            justify-content: center;
-            flex-wrap: wrap;
+            flex-direction: column;
+            align-items: center;
             gap: 20px;
         }
 
         .buttons {
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
+            align-items: center;
             gap: 10px;
         }
 
@@ -36,6 +35,12 @@
             background-color: #0056b3;
         }
 
+        .container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
         .box {
             border: 2px solid black;
             border-radius: 5px;
@@ -51,24 +56,37 @@
 
         .discard-box {
             border: 2px solid red;
+            position: relative;
+        }
+
+        .discard-counter {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: white;
+            padding: 2px 5px;
+            font-weight: bold;
+            font-size: 16px;
         }
 
         .card {
-            margin: 5px;
-            padding: 15px;
+            margin: 2px;
+            padding: 5px;
             border: 1px solid black;
-            border-radius: 5px;
+            border-radius: 3px;
             background-color: white;
             text-align: center;
-            font-size: 16px;
+            font-size: 14px;
             cursor: grab;
             user-select: none;
+            width: 30px;
+            height: 40px;
         }
 
         .hidden {
             background-color: gray;
             color: gray;
-            cursor: grab;
         }
 
         .red {
@@ -82,33 +100,55 @@
         .dragging {
             opacity: 0.5;
         }
+
+        .committed-area {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-start;
+            gap: -20px; /* Overlapping effect */
+            pointer-events: none; /* Prevent dragging committed cards */
+        }
+
+        .committed-card {
+            background-color: gray;
+            color: transparent;
+            border: 1px solid black;
+            width: 30px;
+            height: 40px;
+        }
     </style>
 </head>
 <body>
     <div class="buttons">
         <button id="bsButton">BS!</button>
         <button id="nextTurnButton">Next turn!</button>
+        <button id="playCardsButton">Play Cards!</button>
     </div>
-    <div id="box1" class="box"></div>
-    <div id="box2" class="box"></div>
-    <div id="box3" class="box"></div>
-    <div id="discard" class="box discard-box"></div>
+    <div class="container">
+        <div id="box1" class="box"></div>
+        <div id="box2" class="box"></div>
+        <div id="box3" class="box"></div>
+        <div id="discard" class="box discard-box">
+            <div class="discard-counter">0</div>
+            <div class="committed-area"></div>
+        </div>
+    </div>
 
     <script>
         const suits = ["♥", "♦", "♣", "♠"];
-        const ranks = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+        const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
         const deck = [];
 
         // Create the deck with emojis and suit colors
         suits.forEach((suit, suitIndex) => {
             ranks.forEach(rank => {
                 const isRed = suitIndex < 2; // Hearts and Diamonds are red
-                deck.push({ 
-                    suit, 
-                    rank, 
-                    isRed, 
-                    text: `${suit} ${rank}` 
-                });
+                deck.push({ suit, rank, isRed });
             });
         });
 
@@ -125,7 +165,8 @@
         const box1Cards = deck.slice(0, 17);
         const box2Cards = deck.slice(17, 34);
         const box3Cards = deck.slice(34, 52);
-        const discardCards = [];
+        const discardCards = []; // Cards in discard drag area
+        const committedCards = []; // Committed discard cards
 
         // Render cards in boxes
         const renderBox = (boxId, cards, isHidden) => {
@@ -135,15 +176,12 @@
                 const cardDiv = document.createElement("div");
                 cardDiv.className = "card";
                 cardDiv.draggable = true; // Allow drag for all cards
-                cardDiv.dataset.suit = card.suit;
-                cardDiv.dataset.rank = card.rank;
 
                 if (isHidden) {
                     cardDiv.classList.add("hidden");
-                    cardDiv.textContent = "Hidden Card";
                 } else {
                     cardDiv.classList.add(card.isRed ? "red" : "black");
-                    cardDiv.textContent = card.text;
+                    cardDiv.textContent = `${card.rank}${card.suit}`;
                 }
 
                 cardDiv.addEventListener("dragstart", handleDragStart);
@@ -173,22 +211,7 @@
                 const fromBox = draggedCard.parentElement.id;
                 const toBox = event.target.id;
 
-                // Change card appearance if moved to the discard box
-                if (toBox === "discard") {
-                    draggedCard.classList.add("hidden");
-                    draggedCard.textContent = "Hidden Card";
-                }
-
                 event.target.appendChild(draggedCard);
-
-                // Update card tracking
-                const card = {
-                    suit: draggedCard.dataset.suit,
-                    rank: draggedCard.dataset.rank,
-                };
-
-                removeCardFromBox(fromBox, card);
-                addCardToBox(toBox, card);
             }
         }
 
@@ -196,25 +219,26 @@
             event.preventDefault(); // Allow dropping
         }
 
-        // Remove card from a box
-        function removeCardFromBox(boxId, card) {
-            const box = allCards[boxId];
-            const index = box.findIndex(c => c.suit === card.suit && c.rank === card.rank);
-            if (index > -1) box.splice(index, 1);
-        }
+        // Play Cards (Commit to discard)
+        document.getElementById("playCardsButton").addEventListener("click", () => {
+            const discardBox = document.getElementById("discard");
+            const discardArea = discardBox.querySelector(".committed-area");
 
-        // Add card to a box
-        function addCardToBox(boxId, card) {
-            allCards[boxId].push(card);
-        }
+            const cardsToCommit = Array.from(discardBox.children).filter(card =>
+                card.classList.contains("card")
+            );
 
-        // Track all cards in boxes
-        const allCards = {
-            box1: box1Cards,
-            box2: box2Cards,
-            box3: box3Cards,
-            discard: discardCards,
-        };
+            cardsToCommit.forEach(card => {
+                card.classList.add("committed-card");
+                card.classList.remove("card", "red", "black", "dragging");
+                card.textContent = ""; // Remove text
+                discardArea.appendChild(card); // Move to committed area
+                committedCards.push(card); // Keep track
+            });
+
+            // Update discard counter
+            discardBox.querySelector(".discard-counter").textContent = committedCards.length;
+        });
 
         // Add event listeners to boxes
         document.querySelectorAll(".box").forEach(box => {
@@ -226,7 +250,6 @@
         renderBox("box1", box1Cards, false); // Box 1 is face-up
         renderBox("box2", box2Cards, true);  // Box 2 is face-down
         renderBox("box3", box3Cards, true);  // Box 3 is face-down
-        renderBox("discard", discardCards, true); // Discard starts empty
     </script>
 </body>
 </html>
