@@ -1,14 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Section 1: Metadata and Page Setup -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Card Game</title>
-    
-    <!-- Section 2: Styles -->
     <style>
-        /* Section 2.1: Global Styles */
+        /* Global styles */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
@@ -19,7 +16,6 @@
             color: blue;
         }
 
-        /* Section 2.2: Button Styles */
         .buttons {
             display: flex;
             flex-direction: column;
@@ -41,7 +37,6 @@
             background-color: #0056b3;
         }
 
-        /* Section 2.3: Box and Card Styles */
         .container {
             display: flex;
             gap: 20px;
@@ -144,14 +139,14 @@
     </style>
 </head>
 <body>
-    <!-- Section 3: Button Controls -->
+    <!-- Button Controls -->
     <div class="buttons">
         <button id="bsButton">BS!</button>
         <button id="playCardsButton">Play Cards!</button>
         <button id="dealCardsButton">Deal Cards</button>
     </div>
 
-    <!-- Section 4: Card Containers -->
+    <!-- Card Containers -->
     <div class="container">
         <div id="box1" class="box"></div>
         <div id="box2" class="box"></div>
@@ -162,7 +157,7 @@
         </div>
     </div>
 
-    <!-- Small box to display the current card -->
+    <!-- Current Card Display -->
     <div id="currentCardDisplay" style="width: 100px; height: 50px; border: 1px solid #000; text-align: center; font-size: 18px; padding: 10px;">
         Current Card: <span id="currentCard">A</span>
     </div>
@@ -173,7 +168,6 @@
         const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
         const deck = [];
 
-        // Section 6: Populate and Color Deck
         suits.forEach((suit, suitIndex) => {
             ranks.forEach(rank => {
                 const isRed = suitIndex < 2; // Hearts and Diamonds are red
@@ -181,7 +175,7 @@
             });
         });
 
-        // Section 7: Shuffle Deck
+        // Shuffle the deck
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -189,14 +183,13 @@
             }
         }
 
-        // Section 8: Divide Deck
         let box1Cards = [];
         let box2Cards = [];
         let box3Cards = [];
         let discardCards = [];
         let committedDiscardCards = [];
 
-        // Section 9: Render Cards in Boxes
+        // Render the cards in boxes
         const renderBox = (boxId, cards, isHidden) => {
             const boxDiv = document.getElementById(boxId);
             boxDiv.innerHTML = "";
@@ -214,7 +207,7 @@
             });
         };
 
-        // Section 10: Dragging Mechanics
+        // Dragging Mechanics
         let draggedCard = null;
 
         function handleDragStart(event) {
@@ -238,9 +231,9 @@
             event.preventDefault();
         }
 
-        // Section 11: Deal Cards Button Logic
+        // Deal Cards Button Logic
         document.getElementById("dealCardsButton").addEventListener("click", () => {
-            shuffle(deck); // Shuffle the deck
+            shuffle(deck);
 
             // Divide the shuffled deck evenly between the three boxes
             box1Cards = deck.slice(0, 17);
@@ -256,16 +249,16 @@
             document.getElementById("dealCardsButton").style.display = "none";
         });
 
-        // Section 12: Current Card Logic (Order of Cards)
+        // Current Card Logic (Order of Cards)
         let currentCardIndex = 0;
-        document.getElementById("currentCardDisplay").style.display = 'block'; // Make the current card display visible
+        document.getElementById("currentCardDisplay").style.display = 'block';
 
         document.getElementById("playCardsButton").addEventListener("click", () => {
             // Move all cards in the discard area to committed discard
             committedDiscardCards = committedDiscardCards.concat(discardCards);
             discardCards = [];
 
-            // Flush main discard
+            // Update the discard counter display
             const discardCount = document.querySelector(".discard-counter");
             discardCount.textContent = committedDiscardCards.length;
 
@@ -290,7 +283,7 @@
             });
         });
 
-        // Section 13: BS! Button Logic
+        // BS! Button Logic
         let lastPlay = [];
 
         document.getElementById("bsButton").addEventListener("click", () => {
@@ -316,7 +309,6 @@
             box.addEventListener("dragover", handleDragOver);
             box.addEventListener("drop", handleDrop);
         });
-
     </script>
 </body>
 </html>
