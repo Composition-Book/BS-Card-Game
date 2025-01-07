@@ -168,124 +168,99 @@
             });
         });
 
-        // Section 7: Shuffle Deck
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
+     // Section 7: Shuffle Deck
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    const deck = [
+      { rank: 'A', suit: '♠', isRed: false },
+      { rank: '2', suit: '♠', isRed: false },
+      // Add all other cards here...
+    ];
+
+    shuffle(deck);
+
+    // Section 8: Divide Deck
+    const box1Cards = deck.slice(0, 17);
+    const box2Cards = deck.slice(17, 34);
+    const box3Cards = deck.slice(34, 52);
+    const discardCards = [];
+    const committedCards = [];
+
+    // Section 9: Render Cards in Boxes
+    const renderBox = (boxId, cards, isHidden) => {
+      const boxDiv = document.getElementById(boxId);
+      boxDiv.innerHTML = "";
+      cards.forEach(card => {
+        const cardDiv = document.createElement("div");
+        cardDiv.className = "card";
+        cardDiv.draggable = true;
+        if (isHidden) {
+          cardDiv.classList.add("hidden");
+        } else {
+          cardDiv.classList.add(card.isRed ? "red" : "black");
+          cardDiv.textContent = `${card.rank}${card.suit}`;
         }
-        shuffle(deck);
+        cardDiv.addEventListener("dragstart", handleDragStart);
+        cardDiv.addEventListener("dragend", handleDragEnd);
+        boxDiv.appendChild(cardDiv);
+      });
+    };
 
-        // Section 8: Divide Deck
-        const box1Cards = deck.slice(0, 17);
-        const box2Cards = deck.slice(17, 34);
-        const box3Cards = deck.slice(34, 52);
-        const discardCards = [];
-        const committedCards = [];
+    // Section 10: Dragging Mechanics
+    let draggedCard = null;
 
-        // Section 9: Render Cards in Boxes
-        const renderBox = (boxId, cards, isHidden) => {
-            const boxDiv = document.getElementById(boxId);
-            boxDiv.innerHTML = "";
-            cards.forEach(card => {
-                const cardDiv = document.createElement("div");
-                cardDiv.className = "card";
-                cardDiv.draggable = true;
+    function handleDragStart(event) {
+      draggedCard = event.target;
+      event.target.classList.add("dragging");
+    }
 
-                if (isHidden) {
-                    cardDiv.classList.add("hidden");
-                } else {
-                    cardDiv.classList.add(card.isRed ? "red" : "black");
-                    cardDiv.textContent = `${card.rank}${card.suit}`;
-                }
+    function handleDragEnd(event) {
+      event.target.classList.remove("dragging");
+      draggedCard = null;
+    }
 
-                cardDiv.addEventListener("dragstart", handleDragStart);
-                cardDiv.addEventListener("dragend", handleDragEnd);
+    function handleDrop(event) {
+      event.preventDefault();
+      if (draggedCard && event.target.classList.contains("box")) {
+        event.target.appendChild(draggedCard);
+      }
+    }
 
-                boxDiv.appendChild(cardDiv);
-            });
-        };
+    function handleDragOver(event) {
+      event.preventDefault();
+    }
 
-        // Section 10: Dragging Mechanics
-        let draggedCard = null;
+    // Section 11: Play Cards Button Logic
+    document.getElementById("playCardsButton").addEventListener("click", () => {
+      const discardBox = document.getElementById("discard");
+      const discardArea = discardBox.querySelector(".committed-area");
+      const cardsToCommit = Array.from(discardBox.children).filter(card => card.classList.contains("card"));
+      cardsToCommit.forEach(card => {
+        card.classList.add("committed-card");
+        card.classList.remove("card", "red", "black", "dragging");
+        card.textContent = "";
+        discardArea.appendChild(card);
+        committedCards.push(card);
+      });
+      discardBox.querySelector(".discard-counter").textContent = committedCards.length;
+    });
 
-        function handleDragStart(event) {
-            draggedCard = event.target;
-            event.target.classList.add("dragging");
-        }
+    // Section 12: Add Event Listeners to Boxes
+    document.querySelectorAll(".box").forEach(box => {
+      box.addEventListener("dragover", handleDragOver);
+      box.addEventListener("drop", handleDrop);
+    });
 
-        function handleDragEnd(event) {
-            event.target.classList.remove("dragging");
-            draggedCard = null;
-        }
+    // Section 13: Initial Render
+    renderBox("box1", box1Cards, false); // Box 1 is face-up
+    renderBox("box2", box2Cards, true); // Box 2 is face-down
+    renderBox("box3", box3Cards, true); // Box 3 is face-down
+  </script>
 
-        function handleDrop(event) {
-            event.preventDefault();
-            if (draggedCard && event.target.classList.contains("box")) {
-                event.target.appendChild(draggedCard);
-            }
-        }
-
-        function handleDragOver(event) {
-            event.preventDefault();
-        }
-
-        // Section 11: Play Cards Button Logic
-        document.getElementById("playCardsButton").addEventListener("click", () => {
-            const discardBox = document.getElementById("discard");
-            const discardArea = discardBox.querySelector(".committed-area");
-
-            const cardsToCommit = Array.from(discardBox.children).filter(card =>
-                card.classList.contains("card")
-            );
-
-            cardsToCommit.forEach(card => {
-                card.classList.add("committed-card");
-                card.classList.remove("card", "red", "black", "dragging");
-                card.textContent = "";
-                discardArea.appendChild(card);
-                committedCards.push(card);
-            });
-
-            discardBox.querySelector(".discard-counter").textContent = committedCards.length;
-        });
-
-        // Section 12: Add Event Listeners to Boxes
-        document.querySelectorAll(".box").forEach(box => {
-            box.addEventListener("dragover", handleDragOver);
-            box.addEventListener("drop", handleDrop);
-        });
-
-        // Section 13: Initial Render
-        renderBox("box1", box1Cards, false); // Box 1 is face-up
-        renderBox("box2", box2Cards, true);  // Box 2 is face-down
-        renderBox("box3", box3Cards, true);  // Box 3 is face-down
-
-        // Card order (Ace, 2, 3, 4, ..., King)
-        const cardOrder = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
-        let currentCardIndex = 0; // Start at Ace
-
-        // Function to update the current card displayed
-        function updateCurrentCard() {
-            const currentCardElement = document.getElementById("currentCard");
-            currentCardElement.textContent = cardOrder[currentCardIndex];
-        }
-
-        // Function to move to the next card
-        function nextCard() {
-            currentCardIndex = (currentCardIndex + 1) % cardOrder.length;  // Wrap around to start after King
-            updateCurrentCard();
-        }
-
-        // When BS button is clicked, restart the card order
-        document.getElementById("bsButton").addEventListener("click", () => {
-            currentCardIndex = 0;  // Restart from Ace
-            updateCurrentCard();
-        });
-
-        // Initialize the current card display on page load
-        updateCurrentCard();
-    </script>
 </body>
 </html>
