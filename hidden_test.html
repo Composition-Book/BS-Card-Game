@@ -149,6 +149,7 @@
         </div>
     </div>
 
+  
     <script>
         // Section 5: Deck Creation
         const suits = ["♥", "♦", "♣", "♠"];
@@ -162,6 +163,21 @@
                 deck.push({ suit, rank, isRed });
             });
         });
+
+  // Track card counts for each rank
+const cardCount = {};
+
+// Function to update card counts
+function updateCardCount(card) {
+    const cardKey = `${card.rank}${card.suit}`;
+    cardCount[cardKey] = (cardCount[cardKey] || 0) + 1;
+
+    // Check if there are more than 4 of a kind
+    if (cardCount[cardKey] > 4) {
+        alert('BS! You cannot have more than four of any card!');
+        // Handle the BS logic here (e.g., call BS automatically)
+    }
+}
 
         // Section 7: Shuffle Deck
         function shuffle(array) {
