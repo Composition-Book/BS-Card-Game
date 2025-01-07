@@ -244,7 +244,18 @@
             document.getElementById("dealCardsButton").style.display = "none";
         });
 
-        // Section 12: Add Event Listeners to Boxes
+        // Section 12: Play Cards Button Logic
+        document.getElementById("playCardsButton").addEventListener("click", () => {
+            // Logic for playing cards goes here
+            const currentCardDisplay = document.getElementById("currentCardDisplay");
+            const currentCardElement = document.getElementById("currentCard");
+            let randomCard = deck[Math.floor(Math.random() * deck.length)];
+            
+            currentCardElement.textContent = `${randomCard.rank}${randomCard.suit}`;
+            currentCardDisplay.style.display = 'block'; // Make the current card display visible
+        });
+
+        // Section 13: Add Event Listeners to Boxes
         document.querySelectorAll(".box").forEach(box => {
             box.addEventListener("dragover", handleDragOver);
             box.addEventListener("drop", handleDrop);
