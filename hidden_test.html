@@ -102,10 +102,15 @@
         }
 
         .committed-area {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: 100%;
+            height: 100%;
             display: flex;
-            flex-wrap: wrap;
-            align-content: flex-start;
-            gap: 5px; /* Adjust space between cards */
+            align-items: flex-end;
+            justify-content: flex-start;
+            gap: -20px; /* Overlapping effect */
             pointer-events: none; /* Prevent dragging committed cards */
         }
 
@@ -176,7 +181,7 @@
                     cardDiv.classList.add("hidden");
                 } else {
                     cardDiv.classList.add(card.isRed ? "red" : "black");
-                    cardDiv.textContent = `${card.rank}${card.suit}`;
+                    cardDiv.textContent = ${card.rank}${card.suit};
                 }
 
                 cardDiv.addEventListener("dragstart", handleDragStart);
@@ -203,6 +208,9 @@
         function handleDrop(event) {
             event.preventDefault();
             if (draggedCard && event.target.classList.contains("box")) {
+                const fromBox = draggedCard.parentElement.id;
+                const toBox = event.target.id;
+
                 event.target.appendChild(draggedCard);
             }
         }
@@ -216,15 +224,10 @@
             const discardBox = document.getElementById("discard");
             const discardArea = discardBox.querySelector(".committed-area");
 
-            const cardsToCommit = Array.from(discardBox.querySelectorAll(".card"));
+            const cardsToCommit = Array.from(discardBox.children).filter(card =>
+                card.classList.contains("card")
+            );
 
-            // Check if more than 4 cards are selected
-            if (cardsToCommit.length > 4) {
-                alert("You can only discard a maximum of 4 cards at once.");
-                return; // Prevent committing
-            }
-
-            // Commit the cards
             cardsToCommit.forEach(card => {
                 card.classList.add("committed-card");
                 card.classList.remove("card", "red", "black", "dragging");
