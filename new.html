@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Card Game</title>
+
     <style>
-        /* Global styles */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
@@ -112,10 +112,6 @@
             color: black;
         }
 
-        .dragging {
-            opacity: 0.5;
-        }
-
         .committed-area {
             position: absolute;
             bottom: 10px;
@@ -139,14 +135,14 @@
     </style>
 </head>
 <body>
-    <!-- Button Controls -->
+    <!-- Section 3: Button Controls -->
     <div class="buttons">
         <button id="bsButton">BS!</button>
         <button id="playCardsButton">Play Cards!</button>
         <button id="dealCardsButton">Deal Cards</button>
     </div>
 
-    <!-- Card Containers -->
+    <!-- Section 4: Card Containers -->
     <div class="container">
         <div id="box1" class="box"></div>
         <div id="box2" class="box"></div>
@@ -157,13 +153,11 @@
         </div>
     </div>
 
-    <!-- Current Card Display -->
     <div id="currentCardDisplay" style="width: 100px; height: 50px; border: 1px solid #000; text-align: center; font-size: 18px; padding: 10px;">
         Current Card: <span id="currentCard">A</span>
     </div>
 
     <script>
-        // Define suits and ranks
         const suits = ["♥", "♦", "♣", "♠"];
         const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
         const deck = [];
@@ -175,7 +169,6 @@
             });
         });
 
-        // Shuffle the deck
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -186,10 +179,9 @@
         let box1Cards = [];
         let box2Cards = [];
         let box3Cards = [];
-        let discardCards = [];
-        let committedDiscardCards = [];
+        let committedCards = [];
+        let currentCardIndex = 0;
 
-        // Render the cards in boxes
         const renderBox = (boxId, cards, isHidden) => {
             const boxDiv = document.getElementById(boxId);
             boxDiv.innerHTML = "";
@@ -207,107 +199,46 @@
             });
         };
 
-        // Dragging Mechanics
-        let draggedCard = null;
-
-        function handleDragStart(event) {
-            draggedCard = event.target;
-            event.target.classList.add("dragging");
-        }
-
-        function handleDragEnd(event) {
-            event.target.classList.remove("dragging");
-            draggedCard = null;
-        }
-
-        function handleDrop(event) {
-            event.preventDefault();
-            if (draggedCard && event.target.classList.contains("box")) {
-                event.target.appendChild(draggedCard);
-            }
-        }
-
-        function handleDragOver(event) {
-            event.preventDefault();
-        }
-
-        // Deal Cards Button Logic
         document.getElementById("dealCardsButton").addEventListener("click", () => {
             shuffle(deck);
-
-            // Divide the shuffled deck evenly between the three boxes
             box1Cards = deck.slice(0, 17);
             box2Cards = deck.slice(17, 34);
             box3Cards = deck.slice(34, 52);
-
-            // Render the cards in their respective boxes
-            renderBox("box1", box1Cards, false); // Box 1 is face-up
-            renderBox("box2", box2Cards, true);  // Box 2 is face-down
-            renderBox("box3", box3Cards, true);  // Box 3 is face-down
-
-            // Hide the Deal button after distributing cards
+            renderBox("box1", box1Cards, false);
+            renderBox("box2", box2Cards, true);
+            renderBox("box3", box3Cards, true);
             document.getElementById("dealCardsButton").style.display = "none";
         });
 
-        // Current Card Logic (Order of Cards)
-        let currentCardIndex = 0;
-        document.getElementById("currentCardDisplay").style.display = 'block';
-
         document.getElementById("playCardsButton").addEventListener("click", () => {
-            // Move all cards in the discard area to committed discard
-            committedDiscardCards = committedDiscardCards.concat(discardCards);
-            discardCards = [];
+            // Move cards from discard to committed discard
+            const discardBox = document.getElementById("discard");
+            const discardCounter = discardBox.querySelector(".discard-counter");
+            const committedArea = discardBox.querySelector(".committed-area");
 
-            // Update the discard counter display
-            const discardCount = document.querySelector(".discard-counter");
-            discardCount.textContent = committedDiscardCards.length;
+            const discardCards = Array.from(discardBox.children).filter(child => child.classList.contains('card'));
+            discardCards.forEach(cardDiv => {
+                const committedCard = document.createElement("div");
+                committedCard.className = "committed-card";
+                committedCard.textContent = cardDiv.textContent;
+                committedArea.appendChild(committedCard);
+                cardDiv.remove();
+            });
 
-            // Update the current card count (looping through ranks)
+            // Update discard count
+            discardCounter.textContent = committedArea.children.length;
+
+            // Move to the next card in the order
             if (currentCardIndex < ranks.length - 1) {
                 currentCardIndex++;
             } else {
-                currentCardIndex = 0;  // Reset to "A" after reaching the end
+                currentCardIndex = 0; // Reset to "A"
             }
-
-            // Update the current card display
-            const currentCardElement = document.getElementById("currentCard");
-            currentCardElement.textContent = ranks[currentCardIndex];
-
-            // Re-render the committed discard cards (hidden cards)
-            const committedArea = document.querySelector(".committed-area");
-            committedArea.innerHTML = ""; // Clear existing committed cards
-            committedDiscardCards.forEach(() => {
-                const committedCardDiv = document.createElement("div");
-                committedCardDiv.className = "committed-card";
-                committedArea.appendChild(committedCardDiv);
-            });
+            document.getElementById("currentCard").textContent = ranks[currentCardIndex];
         });
-
-        // BS! Button Logic
-        let lastPlay = [];
 
         document.getElementById("bsButton").addEventListener("click", () => {
-            const currentCard = document.getElementById("currentCard").textContent;
-
-            // Check if the last play is valid based on the current card
-            let isValid = true;
-            lastPlay.forEach(card => {
-                if (card.rank !== currentCard) {
-                    isValid = false;
-                }
-            });
-
-            // If invalid, move discard pile to the opponent's hand
-            if (!isValid) {
-                alert('BS! The last card play was incorrect.');
-            }
-            lastPlay = [];
-        });
-
-        // Add event listeners for drag over
-        document.querySelectorAll(".box").forEach(box => {
-            box.addEventListener("dragover", handleDragOver);
-            box.addEventListener("drop", handleDrop);
+            alert('BS! This button would check a move and reset accordingly.');
         });
     </script>
 </body>
