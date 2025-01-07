@@ -8,49 +8,74 @@
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         .box {
-            display: inline-block;
-            vertical-align: top;
+            border: 2px solid black;
+            border-radius: 5px;
             margin: 10px;
             padding: 10px;
-            border: 1px solid black;
-            border-radius: 5px;
-            width: 200px;
+            width: 300px;
             height: 400px;
-            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
         }
 
         .card {
-            display: block;
             margin: 5px;
-            padding: 10px;
+            padding: 15px;
             border: 1px solid black;
             border-radius: 5px;
+            background-color: white;
+            text-align: center;
+            font-size: 16px;
+            cursor: grab;
+            user-select: none;
         }
 
         .hidden {
             background-color: gray;
             color: gray;
+            cursor: not-allowed;
+        }
+
+        .red {
+            color: red;
+        }
+
+        .black {
+            color: black;
+        }
+
+        .dragging {
+            opacity: 0.5;
         }
     </style>
 </head>
 <body>
-    <h1>Card Game</h1>
     <div id="box1" class="box"></div>
     <div id="box2" class="box"></div>
     <div id="box3" class="box"></div>
 
     <script>
-        // Initialize deck of cards
-        const suits = ["Hearts", "Diamonds", "Clubs", "Spades"];
+        const suits = ["♥", "♦", "♣", "♠"];
         const ranks = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"];
         const deck = [];
 
-        suits.forEach(suit => {
+        // Create the deck with emojis and suit colors
+        suits.forEach((suit, suitIndex) => {
             ranks.forEach(rank => {
-                deck.push(`${rank} of ${suit}`);
+                const isRed = suitIndex < 2; // Hearts and Diamonds are red
+                deck.push({ 
+                    suit, 
+                    rank, 
+                    isRed, 
+                    text: `${suit} ${rank}` 
+                });
             });
         });
 
@@ -63,36 +88,104 @@
         }
         shuffle(deck);
 
-        // Divide cards between three boxes
+        // Divide the deck into boxes
         const box1Cards = deck.slice(0, 17);
         const box2Cards = deck.slice(17, 34);
         const box3Cards = deck.slice(34, 52);
 
         // Render cards in boxes
-        const renderBox = (box, cards, isHidden) => {
-            const boxDiv = document.getElementById(box);
+        const renderBox = (boxId, cards, isHidden) => {
+            const boxDiv = document.getElementById(boxId);
+            boxDiv.innerHTML = ""; // Clear existing cards
             cards.forEach(card => {
                 const cardDiv = document.createElement("div");
                 cardDiv.className = "card";
+                cardDiv.draggable = !isHidden; // Allow drag only for face-up cards
+                cardDiv.dataset.suit = card.suit;
+                cardDiv.dataset.rank = card.rank;
+
                 if (isHidden) {
                     cardDiv.classList.add("hidden");
+                    cardDiv.textContent = "Hidden Card";
+                } else {
+                    cardDiv.classList.add(card.isRed ? "red" : "black");
+                    cardDiv.textContent = card.text;
                 }
-                cardDiv.textContent = isHidden ? "Hidden Card" : card;
+
+                cardDiv.addEventListener("dragstart", handleDragStart);
+                cardDiv.addEventListener("dragend", handleDragEnd);
+
                 boxDiv.appendChild(cardDiv);
             });
         };
 
-        // Render the boxes
-        renderBox("box1", box1Cards, false); // Cards in box 1 are visible
-        renderBox("box2", box2Cards, true);  // Cards in box 2 are hidden
-        renderBox("box3", box3Cards, true);  // Cards in box 3 are hidden
+        // Handle dragging
+        let draggedCard = null;
 
-        // Track all cards in the boxes
+        function handleDragStart(event) {
+            draggedCard = event.target;
+            event.target.classList.add("dragging");
+        }
+
+        function handleDragEnd(event) {
+            event.target.classList.remove("dragging");
+            draggedCard = null;
+        }
+
+        // Handle dropping
+        function handleDrop(event) {
+            event.preventDefault();
+            if (draggedCard && event.target.classList.contains("box")) {
+                event.target.appendChild(draggedCard);
+
+                // Update card tracking
+                const fromBox = draggedCard.parentElement.id;
+                const toBox = event.target.id;
+
+                const card = {
+                    suit: draggedCard.dataset.suit,
+                    rank: draggedCard.dataset.rank,
+                };
+
+                // Remove from old box and add to new box
+                removeCardFromBox(fromBox, card);
+                addCardToBox(toBox, card);
+            }
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault(); // Allow dropping
+        }
+
+        // Remove card from a box
+        function removeCardFromBox(boxId, card) {
+            const box = allCards[boxId];
+            const index = box.findIndex(c => c.suit === card.suit && c.rank === card.rank);
+            if (index > -1) box.splice(index, 1);
+        }
+
+        // Add card to a box
+        function addCardToBox(boxId, card) {
+            allCards[boxId].push(card);
+        }
+
+        // Track all cards in boxes
         const allCards = {
             box1: box1Cards,
             box2: box2Cards,
-            box3: box3Cards
+            box3: box3Cards,
         };
+
+        // Add event listeners to boxes
+        document.querySelectorAll(".box").forEach(box => {
+            box.addEventListener("dragover", handleDragOver);
+            box.addEventListener("drop", handleDrop);
+        });
+
+        // Render the boxes
+        renderBox("box1", box1Cards, false); // Box 1 is face-up
+        renderBox("box2", box2Cards, true);  // Box 2 is face-down
+        renderBox("box3", box3Cards, true);  // Box 3 is face-down
 
         console.log("All cards:", allCards);
     </script>
