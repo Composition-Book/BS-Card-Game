@@ -129,6 +129,13 @@
             width: 30px;
             height: 40px;
         }
+
+        .play-field {
+            margin: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
@@ -149,6 +156,9 @@
             <div class="committed-area"></div>
         </div>
     </div>
+
+    <!-- Play field where cards are dragged -->
+    <div id="playField" class="play-field"></div>
 
     <!-- Small box to display the current card -->
     <div id="currentCardDisplay" style="width: 100px; height: 50px; border: 1px solid #000; text-align: center; font-size: 18px; padding: 10px;">
@@ -176,11 +186,6 @@
                 [array[i], array[j]] = [array[j], array[i]];
             }
         }
-
-        // Section 8: Divide Deck
-        let box1Cards = [];
-        let box2Cards = [];
-        let box3Cards = [];
 
         // Section 9: Render Cards in Boxes
         const renderBox = (boxId, cards, isHidden) => {
@@ -231,9 +236,9 @@
             shuffle(deck);
 
             // Divide the shuffled deck evenly between the three boxes
-            box1Cards = deck.slice(0, 17);
-            box2Cards = deck.slice(17, 34);
-            box3Cards = deck.slice(34, 52);
+            const box1Cards = deck.slice(0, 17);
+            const box2Cards = deck.slice(17, 34);
+            const box3Cards = deck.slice(34, 52);
 
             // Render the cards in their respective boxes
             renderBox("box1", box1Cards, false); // Box 1 is face-up
@@ -250,59 +255,29 @@
         document.getElementById("currentCardDisplay").style.display = 'block'; // Make the current card display visible
 
         document.getElementById("playCardsButton").addEventListener("click", () => {
-            // Play the next card in order
+            // Move all cards in the play field to the committed discard area
+            const playField = document.getElementById("playField");
+            const committedArea = document.querySelector("#discard .committed-area");
+
+            while (playField.firstChild) {
+                const card = playField.firstChild;
+                card.classList.add("hidden"); // Make card face-down
+                committedArea.appendChild(card);
+            }
+
+            // Condense the committed discard area (stack them)
+            committedArea.style.gap = "-5px";
+
+            // Update the discard counter
+            const discardCount = committedArea.querySelectorAll(".card").length;
+            document.querySelector(".discard-counter").textContent = discardCount;
+
+            // Move to the next card
             if (currentCardIndex < ranks.length) {
                 const currentCardElement = document.getElementById("currentCard");
                 currentCardElement.textContent = ranks[currentCardIndex];
                 currentCardIndex++;
             }
-        });
-
-        // Section 13: BS! Button Logic
-        let lastPlay = [];
-        let lastPlayer = null;
-
-        document.getElementById("bsButton").addEventListener("click", () => {
-            const currentCard = document.getElementById("currentCard").textContent;
-
-            // Check if the last play is valid based on the current card
-            let isValid = true;
-            lastPlay.forEach(card => {
-                if (card.rank !== currentCard) {
-                    isValid = false;
-                }
-            });
-
-            // If invalid, move discard pile to the opponent's hand
-            if (!isValid) {
-                alert('BS! The last play was invalid.');
-                // Implement logic to move the discard pile into the other player's hand
-            }
-
-            // Reset last play
-            lastPlay = [];
-        });
-
-        // Section 14: Play Cards Button Logic
-        document.getElementById("playCardsButton").addEventListener("click", () => {
-            const discardPile = document.getElementById("discard");
-
-            // Move any dragged cards in the play field to the committed discard
-            const playField = document.querySelectorAll(".card.dragging");
-
-            playField.forEach(cardDiv => {
-                // Turn the card face down
-                cardDiv.classList.add("hidden");
-
-                // Add it to the committed discard area
-                discardPile.querySelector('.committed-area').appendChild(cardDiv);
-            });
-
-            // Condense the discard pile (group the cards in the committed area)
-            discardPile.querySelector('.discard-counter').textContent = discardPile.querySelectorAll(".card").length;
-
-            // Transition to the calling phase (if needed)
-            // Reset play field if necessary
         });
 
         // Section 15: Add Event Listeners to Boxes
