@@ -115,8 +115,9 @@
             width: 100%;
             height: 100%;
             display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
+            align-items: flex-end;
+            justify-content: flex-start;
+            gap: -20px; /* Overlapping effect */
             pointer-events: none; /* Prevent dragging committed cards */
         }
 
@@ -213,17 +214,6 @@
             draggedCard = null;
         }
 
-        function handleDrop(event) {
-            event.preventDefault();
-            if (draggedCard && event.target.classList.contains("box")) {
-                event.target.appendChild(draggedCard);
-            }
-        }
-
-        function handleDragOver(event) {
-            event.preventDefault();
-        }
-
         // Section 11: Deal Cards Button Logic
         document.getElementById("dealCardsButton").addEventListener("click", () => {
             shuffle(deck);
@@ -253,25 +243,19 @@
 
         // Update automatically when cards are played
         document.getElementById("playCardsButton").addEventListener("click", () => {
+            // Move all cards from the play field to the committed discard pile
             const discardPile = document.getElementById("discard");
-            const committedArea = discardPile.querySelector('.committed-area');
-            const discardCounter = discardPile.querySelector('.discard-counter');
 
-            // If there are more than 4 cards, display error
-            if (committedArea.childNodes.length > 4) {
-                alert("Error: You can only discard up to 4 cards at once!");
-                return;
-            }
+            // Move the cards (face-down) from the play field (in box) to the committed discard
+            const playField = document.querySelectorAll(".box .card.dragging");
+            playField.forEach(cardDiv => {
+                // Condense to committed discard
+                cardDiv.classList.add("hidden");
+                discardPile.querySelector('.committed-area').appendChild(cardDiv);
+            });
 
-            // Move the current card to the discard pile (as a face-down card)
-            const currentCard = ranks[currentCardIndex];
-            const cardDiv = document.createElement("div");
-            cardDiv.className = "card hidden";
-            cardDiv.textContent = currentCard;
-            committedArea.appendChild(cardDiv);
-
-            // Update the discard counter
-            discardCounter.textContent = committedArea.childNodes.length;
+            // Update discard counter
+            discardPile.querySelector('.discard-counter').textContent = discardPile.querySelectorAll(".card").length;
 
             // Condense the discard pile
             currentCardIndex++;
