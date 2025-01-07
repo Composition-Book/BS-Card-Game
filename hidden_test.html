@@ -164,28 +164,63 @@
             });
         });
 
-  // Track card counts for each rank
-const cardCount = {};
+        //Section 14. Track card counts for each rank
+        const cardCount = {};
+    
+        // Function to update card counts
+        function updateCardCount(card) {
+        const cardKey = `${card.rank}${card.suit}`;
+        cardCount[cardKey] = (cardCount[cardKey] || 0) + 1;
 
-// Function to update card counts
-function updateCardCount(card) {
-    const cardKey = `${card.rank}${card.suit}`;
-    cardCount[cardKey] = (cardCount[cardKey] || 0) + 1;
-
-    // Check if there are more than 4 of a kind
-    if (cardCount[cardKey] > 4) {
+        // Check if there are more than 4 of a kind
+       if (cardCount[cardKey] > 4) {
         alert('BS! You cannot have more than four of any card!');
         // Handle the BS logic here (e.g., call BS automatically)
     }
 }
+        let lastPlay = [];  // Store the last play (e.g., ["2", "2"] for two twos)
+        let bsCalled = false;  // Track if BS has been called
+        // When BS button is clicked
+        document.getElementById("bsButton").addEventListener("click", () => {
+            bsCalled = true;
+            const lastClaim = lastPlay.join(' ');  // Example: "two twos
+            const actualCards = getCardsPlayed();  // Function to get the actual cards played (you can implement this logic based on the discard pile or the boxes)
+                if (bsCalled) {
+        // Check if the last play was correct
+        if (lastClaim === actualCards) {
+            alert('BS call was wrong. You take the cards!');
+            // Add logic to take cards from discard
+        } else {
+            alert('The BS call was correct. The player who made the false claim takes the cards!');
+            // Add logic to give the player who lied the cards
+            }
+        }
+    });
+        // Take cards from the discard pile
+    function takeCards() {
+    const discardBox = document.getElementById("discard");
+    const discardCards = Array.from(discardBox.querySelectorAll(".card"));
+    
+    discardCards.forEach(card => {
+        // Logic to add these cards to the player's hand
+        // You can adjust how the cards are visually moved or tracked
+        console.log('Taking card:', card.textContent);
+        // Example: move card to player's hand or other relevant area
+    });
+
+    // Reset discard pile counter and update UI
+        discardBox.querySelector(".discard-counter").textContent = 0;
+        discardBox.innerHTML = '';  // Clear discard pile
+}
 
         // Section 7: Shuffle Deck
         function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+        for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
             }
         }
+        
         shuffle(deck);
 
         // Section 8: Divide Deck
