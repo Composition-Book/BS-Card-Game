@@ -113,6 +113,7 @@
             width: 30px;
             height: 40px;
         }
+
     </style>
 </head>
 <body>
@@ -122,8 +123,8 @@
     </div>
 
     <div class="container">
-        <div id="box1" class="box"></div>
-        <div id="box2" class="box"></div>
+        <div id="player1" class="box"></div>
+        <div id="player2" class="box"></div>
         <div id="box3" class="box"></div>
         <div id="box4" class="box"></div>
         <div id="field" class="field-box"></div> <!-- New field box -->
@@ -187,7 +188,7 @@
 
         function handleDrop(event) {
             event.preventDefault();
-            if (draggedCard && event.target.classList.contains("box")) {
+            if (draggedCard && event.target.classList.contains("box") || event.target.classList.contains("field-box")) {
                 event.target.appendChild(draggedCard);
             }
         }
@@ -199,14 +200,11 @@
         // Deal Cards Function
         document.getElementById("dealCardsButton").addEventListener("click", () => {
             shuffle(deck);
-            const box1Cards = deck.slice(0, 13);
-            const box2Cards = deck.slice(13, 26);
-            const box3Cards = deck.slice(26, 39);
-            const box4Cards = deck.slice(39, 52);
-            renderBox("box1", box1Cards, false);
-            renderBox("box2", box2Cards, true);
-            renderBox("box3", box3Cards, true);
-            renderBox("box4", box4Cards, true);
+            const player1Cards = deck.slice(0, 26);
+            const player2Cards = deck.slice(26, 52);
+
+            renderBox("player1", player1Cards, false); // Player 1
+            renderBox("player2", player2Cards, true);  // Player 2
             document.getElementById("dealCardsButton").style.display = "none";
         });
 
@@ -228,7 +226,7 @@
         });
 
         // Add event listeners for drag/drop on boxes
-        document.querySelectorAll(".box").forEach((box) => {
+        document.querySelectorAll(".box, .field-box").forEach((box) => {
             box.addEventListener("dragover", handleDragOver);
             box.addEventListener("drop", handleDrop);
         });
