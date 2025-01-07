@@ -246,14 +246,30 @@
         // Section 12: Current Card Logic (Order of Cards)
         let currentCardIndex = 0;
 
-        document.getElementById("currentCardDisplay").style.display = 'block'; // Make the current card display visible
+        // Automatically update the current card when it's played
+        function updateCurrentCard() {
+            const currentCardElement = document.getElementById("currentCard");
+            currentCardElement.textContent = ranks[currentCardIndex];
+        }
 
+        // Update automatically when cards are played
         document.getElementById("playCardsButton").addEventListener("click", () => {
-            // Play the next card in order
+            // If the current card is available, move it to the discard pile
+            const currentCard = ranks[currentCardIndex];
+            const discardPile = document.getElementById("discard");
+
+            // Move the current card to the discard pile (as a face-down card)
+            const cardDiv = document.createElement("div");
+            cardDiv.className = "card hidden";
+            cardDiv.textContent = currentCard;
+
+            discardPile.querySelector('.committed-area').appendChild(cardDiv);
+            discardPile.querySelector('.discard-counter').textContent = discardPile.querySelectorAll(".card").length;
+
+            // Condense the discard pile
+            currentCardIndex++;
             if (currentCardIndex < ranks.length) {
-                const currentCardElement = document.getElementById("currentCard");
-                currentCardElement.textContent = ranks[currentCardIndex];
-                currentCardIndex++;
+                updateCurrentCard(); // Update to the next card
             }
         });
 
@@ -267,47 +283,18 @@
             // Check if the last play is valid based on the current card
             let isValid = true;
             lastPlay.forEach(card => {
-                if (card.rank !== currentCard) {
+                if (card.rank === currentCard) {
                     isValid = false;
                 }
             });
 
-            // If invalid, move discard pile to the opponent's hand
-            if (!isValid) {
-                alert('BS! The last play was invalid.');
-                // Implement logic to move the discard pile into the other player's hand
+            if (isValid) {
+                lastPlayer = currentCard;
+                alert("BS called! You were right.");
+            } else {
+                alert("You were wrong!");
             }
-
-            // Reset last play
-            lastPlay = [];
-        });
-
-        // Section 14: Play Cards Button Logic
-        document.getElementById("playCardsButton").addEventListener("click", () => {
-            const currentCard = document.getElementById("currentCard").textContent;
-            const discardPile = document.getElementById("discard");
-
-            // Create a new card div and add it to the discard pile (face-down)
-            const cardDiv = document.createElement("div");
-            cardDiv.className = "card hidden";
-            cardDiv.textContent = currentCard;
-
-            discardPile.querySelector('.committed-area').appendChild(cardDiv);
-            discardPile.querySelector('.discard-counter').textContent = discardPile.querySelectorAll(".card").length;
-
-            // Condense the discard pile
-            lastPlay.push({ rank: currentCard });
-
-            // Hide the current card from display
-            document.getElementById("currentCard").textContent = '';
-        });
-
-        // Section 15: Add Event Listeners to Boxes
-        document.querySelectorAll(".box").forEach(box => {
-            box.addEventListener("dragover", handleDragOver);
-            box.addEventListener("drop", handleDrop);
         });
     </script>
-
 </body>
 </html>
