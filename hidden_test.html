@@ -169,106 +169,88 @@
             });
         });
 
-<script>
-  // Section 7: Shuffle Deck
-  function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-  }
+        // Section 7: Shuffle Deck
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
 
-  const deck = [
-    { rank: 'A', suit: '♠', isRed: false },
-    { rank: '2', suit: '♠', isRed: false },
-    { rank: '3', suit: '♠', isRed: false },
-    { rank: '4', suit: '♠', isRed: false },
-    { rank: '5', suit: '♠', isRed: false },
-    { rank: '6', suit: '♠', isRed: false },
-    { rank: '7', suit: '♠', isRed: false },
-    { rank: '8', suit: '♠', isRed: false },
-    { rank: '9', suit: '♠', isRed: false },
-    { rank: '10', suit: '♠', isRed: false },
-    { rank: 'J', suit: '♠', isRed: false },
-    { rank: 'Q', suit: '♠', isRed: false },
-    { rank: 'K', suit: '♠', isRed: false },
-    // Add all other cards here...
-  ];
+        // Section 8: Divide Deck
+        let box1Cards = [];
+        let box2Cards = [];
+        let box3Cards = [];
 
-  // Section 8: Divide Deck
-  let box1Cards = [];
-  let box2Cards = [];
-  let box3Cards = [];
+        // Section 9: Render Cards in Boxes
+        const renderBox = (boxId, cards, isHidden) => {
+            const boxDiv = document.getElementById(boxId);
+            boxDiv.innerHTML = "";
+            cards.forEach(card => {
+                const cardDiv = document.createElement("div");
+                cardDiv.className = "card";
+                cardDiv.draggable = true;
+                if (isHidden) {
+                    cardDiv.classList.add("hidden");
+                } else {
+                    cardDiv.classList.add(card.isRed ? "red" : "black");
+                    cardDiv.textContent = `${card.rank}${card.suit}`;
+                }
+                cardDiv.addEventListener("dragstart", handleDragStart);
+                cardDiv.addEventListener("dragend", handleDragEnd);
+                boxDiv.appendChild(cardDiv);
+            });
+        };
 
-  // Section 9: Render Cards in Boxes
-  const renderBox = (boxId, cards, isHidden) => {
-    const boxDiv = document.getElementById(boxId);
-    boxDiv.innerHTML = "";
-    cards.forEach(card => {
-      const cardDiv = document.createElement("div");
-      cardDiv.className = "card";
-      cardDiv.draggable = true;
-      if (isHidden) {
-        cardDiv.classList.add("hidden");
-      } else {
-        cardDiv.classList.add(card.isRed ? "red" : "black");
-        cardDiv.textContent = `${card.rank}${card.suit}`;
-      }
-      cardDiv.addEventListener("dragstart", handleDragStart);
-      cardDiv.addEventListener("dragend", handleDragEnd);
-      boxDiv.appendChild(cardDiv);
-    });
-  };
+        // Section 10: Dragging Mechanics
+        let draggedCard = null;
 
-  // Section 10: Dragging Mechanics
-  let draggedCard = null;
+        function handleDragStart(event) {
+            draggedCard = event.target;
+            event.target.classList.add("dragging");
+        }
 
-  function handleDragStart(event) {
-    draggedCard = event.target;
-    event.target.classList.add("dragging");
-  }
+        function handleDragEnd(event) {
+            event.target.classList.remove("dragging");
+            draggedCard = null;
+        }
 
-  function handleDragEnd(event) {
-    event.target.classList.remove("dragging");
-    draggedCard = null;
-  }
+        function handleDrop(event) {
+            event.preventDefault();
+            if (draggedCard && event.target.classList.contains("box")) {
+                event.target.appendChild(draggedCard);
+            }
+        }
 
-  function handleDrop(event) {
-    event.preventDefault();
-    if (draggedCard && event.target.classList.contains("box")) {
-      event.target.appendChild(draggedCard);
-    }
-  }
+        function handleDragOver(event) {
+            event.preventDefault();
+        }
 
-  function handleDragOver(event) {
-    event.preventDefault();
-  }
+        // Section 11: Deal Cards Button Logic
+        document.getElementById("dealCardsButton").addEventListener("click", () => {
+            shuffle(deck);
 
-  // Section 11: Deal Cards Button Logic
-  document.getElementById("dealCardsButton").addEventListener("click", () => {
-    shuffle(deck);
+            // Divide the shuffled deck evenly between the three boxes
+            box1Cards = deck.slice(0, 17);
+            box2Cards = deck.slice(17, 34);
+            box3Cards = deck.slice(34, 52);
 
-    // Divide the shuffled deck evenly between the three boxes
-    box1Cards = deck.slice(0, 17);
-    box2Cards = deck.slice(17, 34);
-    box3Cards = deck.slice(34, 52);
+            // Render the cards in their respective boxes
+            renderBox("box1", box1Cards, false); // Box 1 is face-up
+            renderBox("box2", box2Cards, true); // Box 2 is face-down
+            renderBox("box3", box3Cards, true); // Box 3 is face-down
 
-    // Render the cards in their respective boxes
-    renderBox("box1", box1Cards, false); // Box 1 is face-up
-    renderBox("box2", box2Cards, true); // Box 2 is face-down
-    renderBox("box3", box3Cards, true); // Box 3 is face-down
+            // Hide the Deal button after distributing cards
+            document.getElementById("dealCardsButton").style.display = "none";
+        });
 
-    // Hide the Deal button after distributing cards
-    document.getElementById("dealCardsButton").style.display = "none";
-  });
+        // Section 12: Add Event Listeners to Boxes
+        document.querySelectorAll(".box").forEach(box => {
+            box.addEventListener("dragover", handleDragOver);
+            box.addEventListener("drop", handleDrop);
+        });
 
-  // Section 12: Add Event Listeners to Boxes
-  document.querySelectorAll(".box").forEach(box => {
-    box.addEventListener("dragover", handleDragOver);
-    box.addEventListener("drop", handleDrop);
-  });
-
-</script>
+    </script>
 
 </body>
 </html>
