@@ -61,7 +61,7 @@
             overflow: hidden;
         }
 
-      .discard-box {
+   .discard-box {
     position: relative;
     width: 300px;
     height: 200px;
@@ -74,7 +74,7 @@
 
 .discard-counter {
     position: absolute;
-    top: -50px; /* Moves the counter 50px above the discard box */
+    top: 10px; /* Adjusted to avoid pushing it out of view */
     left: 50%;
     transform: translateX(-50%);
     background-color: black;
@@ -87,6 +87,7 @@
     min-height: 20px; /* Ensures the counter has a minimum height */
     text-align: center; /* Centers text if present */
     color: white; /* Ensures the text color contrasts with the black background */
+    z-index: 10; /* Brings the counter to the front */
 }
 
         .card {
