@@ -3,295 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Card Game</title>
+    <title>BS Game</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
         }
 
-        .buttons {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
+        .card {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px;
+            border: 1px solid black;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .selected {
+            background-color: lightblue;
+        }
+
+        #hand, #discard-pile {
+            margin: 20px 0;
         }
 
         button {
             padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            background-color: #007BFF;
-            color: white;
-            cursor: pointer;
+            margin-top: 20px;
         }
 
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        .container {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .box {
-            border: 2px solid black;
-            border-radius: 5px;
-            margin: 10px;
-            padding: 10px;
-            width: 300px;
-            height: 400px;
-            display: flex;
-            flex-wrap: wrap;
-            align-content: flex-start;
-            overflow: hidden;
-        }
-
-        .discard-box {
-            border: 2px solid red;
-            position: relative;
-        }
-
-        .discard-counter {
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: white;
-            padding: 2px 5px;
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .card {
-            margin: 2px;
-            padding: 5px;
-            border: 1px solid black;
-            border-radius: 3px;
-            background-color: white;
-            text-align: center;
-            font-size: 14px;
-            cursor: grab;
-            user-select: none;
-            width: 30px;
-            height: 40px;
-        }
-
-        .hidden {
-            background-color: gray;
-            color: gray;
-        }
-
-        .red {
-            color: red;
-        }
-
-        .black {
-            color: black;
-        }
-
-        .dragging {
-            opacity: 0.5;
-        }
-
-        .committed-area {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: flex-end;
-            justify-content: flex-start;
-            gap: -20px; /* Overlapping effect */
-            pointer-events: none; /* Prevent dragging committed cards */
-        }
-
-        .committed-card {
-            background-color: gray;
-            color: transparent;
-            border: 1px solid black;
-            width: 30px;
-            height: 40px;
+        #game-info {
+            margin: 20px 0;
         }
     </style>
 </head>
 <body>
-    <div class="buttons">
-        <button id="bsButton">BS!</button>
-        <button id="nextTurnButton">Next turn!</button>
-        <button id="playCardsButton">Play Cards!</button>
+    <h1>BS Game</h1>
+
+    <div id="game-info">
+        <p>Current Player: <span id="current-player">You</span></p>
+        <p>Current Rank: <span id="current-rank">Ace</span></p>
     </div>
-    <div class="container">
-        <div id="box1" class="box"></div>
-        <div id="box2" class="box"></div>
-        <div id="box3" class="box"></div>
-        <div id="discard" class="box discard-box">
-            <div class="discard-counter">0</div>
-            <div class="committed-area"></div>
-        </div>
+
+    <h2>Your Hand</h2>
+    <div id="hand">
+        <!-- Cards will be dynamically added here -->
+    </div>
+
+    <button id="play-cards" disabled>Play Cards</button>
+
+    <h2>Discard Pile</h2>
+    <div id="discard-pile">
+        <!-- Discarded cards will appear here -->
     </div>
 
     <script>
-        const suits = ["♥", "♦", "♣", "♠"];
-        const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
-        const deck = [];
+        // Game data
+        const ranks = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"];
+        let currentRankIndex = 0;
+        let hand = ["Ace of Hearts", "2 of Clubs", "3 of Diamonds", "4 of Spades", "5 of Hearts"];
+        let discardPile = [];
 
-        // Create the deck with emojis and suit colors
-        suits.forEach((suit, suitIndex) => {
-            ranks.forEach(rank => {
-                const isRed = suitIndex < 2; // Hearts and Diamonds are red
-                deck.push({ suit, rank, isRed });
-            });
-        });
+        const handDiv = document.getElementById("hand");
+        const discardPileDiv = document.getElementById("discard-pile");
+        const playCardsButton = document.getElementById("play-cards");
+        const currentRankSpan = document.getElementById("current-rank");
 
-        
-        // Shuffle the deck
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
-        shuffle(deck);
+        let selectedCards = [];
 
-        // Divide the deck into boxes
-        const box1Cards = deck.slice(0, 17);
-        const box2Cards = deck.slice(17, 34);
-        const box3Cards = deck.slice(34, 52);
-        const discardCards = []; // Cards in discard drag area
-        const committedCards = []; // Committed discard cards
-
-        // Render cards in boxes
-        const renderBox = (boxId, cards, isHidden) => {
-            const boxDiv = document.getElementById(boxId);
-            boxDiv.innerHTML = ""; // Clear existing cards
-            cards.forEach(card => {
+        // Function to render the hand
+        function updateHand() {
+            handDiv.innerHTML = ""; // Clear the hand display
+            hand.forEach((card, index) => {
                 const cardDiv = document.createElement("div");
                 cardDiv.className = "card";
-                cardDiv.draggable = true; // Allow drag for all cards
+                cardDiv.textContent = card;
 
-                if (isHidden) {
-                    cardDiv.classList.add("hidden");
-                } else {
-                    cardDiv.classList.add(card.isRed ? "red" : "black");
-                    cardDiv.textContent = `${card.rank}${card.suit}`;
+                // Add selected styling
+                if (selectedCards.includes(index)) {
+                    cardDiv.classList.add("selected");
                 }
 
-                cardDiv.addEventListener("dragstart", handleDragStart);
-                cardDiv.addEventListener("dragend", handleDragEnd);
-
-                boxDiv.appendChild(cardDiv);
+                // Toggle selection on click
+                cardDiv.onclick = () => toggleCardSelection(index);
+                handDiv.appendChild(cardDiv);
             });
-        };
-
-        // Handle dragging
-        let draggedCard = null;
-
-        function handleDragStart(event) {
-            draggedCard = event.target;
-            event.target.classList.add("dragging");
         }
 
-        function handleDragEnd(event) {
-            event.target.classList.remove("dragging");
-            draggedCard = null;
+        // Function to render the discard pile
+        function updateDiscardPile() {
+            discardPileDiv.innerHTML = discardPile.map(card => `<span class="card">${card}</span>`).join(", ");
         }
 
-        // Handle dropping
-        function handleDrop(event) {
-            event.preventDefault();
-            if (draggedCard && event.target.classList.contains("box")) {
-                const fromBox = draggedCard.parentElement.id;
-                const toBox = event.target.id;
-
-                event.target.appendChild(draggedCard);
+        // Toggle card selection
+        function toggleCardSelection(index) {
+            if (selectedCards.includes(index)) {
+                selectedCards = selectedCards.filter(i => i !== index);
+            } else {
+                selectedCards.push(index);
             }
+
+            // Enable or disable the play button
+            playCardsButton.disabled = selectedCards.length === 0;
+            updateHand();
         }
 
-        function handleDragOver(event) {
-            event.preventDefault(); // Allow dropping
+        // Play selected cards
+        function playCards() {
+            const playedCards = selectedCards.map(index => hand[index]);
+            discardPile = [...discardPile, ...playedCards];
+            hand = hand.filter((_, index) => !selectedCards.includes(index));
+            selectedCards = [];
+
+            // Update the current rank
+            currentRankIndex = (currentRankIndex + 1) % ranks.length;
+            currentRankSpan.textContent = ranks[currentRankIndex];
+
+            // Disable the play button
+            playCardsButton.disabled = true;
+
+            // Update the displays
+            updateHand();
+            updateDiscardPile();
         }
 
-        // Play Cards (Commit to discard)
-        document.getElementById("playCardsButton").addEventListener("click", () => {
-            const discardBox = document.getElementById("discard");
-            const discardArea = discardBox.querySelector(".committed-area");
-
-            const cardsToCommit = Array.from(discardBox.children).filter(card =>
-                card.classList.contains("card")
-            );
-
-            cardsToCommit.forEach(card => {
-                card.classList.add("committed-card");
-                card.classList.remove("card", "red", "black", "dragging");
-                card.textContent = ""; // Remove text
-                discardArea.appendChild(card); // Move to committed area
-                committedCards.push(card); // Keep track
-            });
-
-            // Update discard counter
-            discardBox.querySelector(".discard-counter").textContent = committedCards.length;
-        });
-
-        // Add event listeners to boxes
-        document.querySelectorAll(".box").forEach(box => {
-            box.addEventListener("dragover", handleDragOver);
-            box.addEventListener("drop", handleDrop);
-        });
-
-        // Render the boxes
-        renderBox("box1", box1Cards, false); // Box 1 is face-up
-        renderBox("box2", box2Cards, true);  // Box 2 is face-down
-        renderBox("box3", box3Cards, true);  // Box 3 is face-down
+        // Initialize the game
+        playCardsButton.onclick = playCards;
+        updateHand();
+        updateDiscardPile();
     </script>
-    <style>
-    /* Other styles remain the same */
-
-    .committed-area {
-        display: flex;
-        flex-wrap: wrap;
-        align-content: flex-start;
-        gap: 5px; /* Space between cards */
-        pointer-events: none; /* Prevent dragging committed cards */
-    }
-</style>
-
-<script>
-    // Other scripts remain the same
-
-    document.getElementById("playCardsButton").addEventListener("click", () => {
-        const discardBox = document.getElementById("discard");
-        const discardArea = discardBox.querySelector(".committed-area");
-
-        const cardsToCommit = Array.from(discardBox.querySelectorAll(".card"));
-
-        // Check if more than 4 cards are selected
-        if (cardsToCommit.length > 4) {
-            alert("You can only discard a maximum of 4 cards at once.");
-            return; // Prevent committing
-        }
-
-        // Commit the cards
-        cardsToCommit.forEach(card => {
-            card.classList.add("committed-card");
-            card.classList.remove("card", "red", "black", "dragging");
-            card.textContent = ""; // Remove text
-            discardArea.appendChild(card); // Move to committed area
-            committedCards.push(card); // Keep track
-        });
-
-        // Update discard counter
-        discardBox.querySelector(".discard-counter").textContent = committedCards.length;
-    });
-</script>
-
 </body>
 </html>
