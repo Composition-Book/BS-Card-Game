@@ -9,8 +9,31 @@
             font-family: Arial, sans-serif;
             margin: 20px;
             display: flex;
+            flex-direction: row;
             justify-content: center;
             flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
         }
 
         .box {
@@ -23,6 +46,11 @@
             display: flex;
             flex-wrap: wrap;
             align-content: flex-start;
+            overflow: hidden;
+        }
+
+        .discard-box {
+            border: 2px solid red;
         }
 
         .card {
@@ -40,7 +68,7 @@
         .hidden {
             background-color: gray;
             color: gray;
-            cursor: not-allowed;
+            cursor: grab;
         }
 
         .red {
@@ -57,9 +85,14 @@
     </style>
 </head>
 <body>
+    <div class="buttons">
+        <button id="bsButton">BS!</button>
+        <button id="nextTurnButton">Next turn!</button>
+    </div>
     <div id="box1" class="box"></div>
     <div id="box2" class="box"></div>
     <div id="box3" class="box"></div>
+    <div id="discard" class="box discard-box"></div>
 
     <script>
         const suits = ["♥", "♦", "♣", "♠"];
@@ -92,6 +125,7 @@
         const box1Cards = deck.slice(0, 17);
         const box2Cards = deck.slice(17, 34);
         const box3Cards = deck.slice(34, 52);
+        const discardCards = [];
 
         // Render cards in boxes
         const renderBox = (boxId, cards, isHidden) => {
@@ -100,7 +134,7 @@
             cards.forEach(card => {
                 const cardDiv = document.createElement("div");
                 cardDiv.className = "card";
-                cardDiv.draggable = !isHidden; // Allow drag only for face-up cards
+                cardDiv.draggable = true; // Allow drag for all cards
                 cardDiv.dataset.suit = card.suit;
                 cardDiv.dataset.rank = card.rank;
 
@@ -136,18 +170,23 @@
         function handleDrop(event) {
             event.preventDefault();
             if (draggedCard && event.target.classList.contains("box")) {
-                event.target.appendChild(draggedCard);
-
-                // Update card tracking
                 const fromBox = draggedCard.parentElement.id;
                 const toBox = event.target.id;
 
+                // Change card appearance if moved to the discard box
+                if (toBox === "discard") {
+                    draggedCard.classList.add("hidden");
+                    draggedCard.textContent = "Hidden Card";
+                }
+
+                event.target.appendChild(draggedCard);
+
+                // Update card tracking
                 const card = {
                     suit: draggedCard.dataset.suit,
                     rank: draggedCard.dataset.rank,
                 };
 
-                // Remove from old box and add to new box
                 removeCardFromBox(fromBox, card);
                 addCardToBox(toBox, card);
             }
@@ -174,6 +213,7 @@
             box1: box1Cards,
             box2: box2Cards,
             box3: box3Cards,
+            discard: discardCards,
         };
 
         // Add event listeners to boxes
@@ -186,8 +226,7 @@
         renderBox("box1", box1Cards, false); // Box 1 is face-up
         renderBox("box2", box2Cards, true);  // Box 2 is face-down
         renderBox("box3", box3Cards, true);  // Box 3 is face-down
-
-        console.log("All cards:", allCards);
+        renderBox("discard", discardCards, true); // Discard starts empty
     </script>
 </body>
 </html>
