@@ -299,31 +299,28 @@ document.getElementById("playCardsButton").addEventListener("click", () => {
     const discardPile = document.getElementById("discard");
 
     if (currentCard !== "") {
-        // Create a new div for the current card and give it the "hidden" class
-        const cardDiv = document.createElement("div");
-        cardDiv.className = "card hidden"; // Add hidden class to ensure styling is applied
-        cardDiv.textContent = currentCard;
+        // Create a new div for the current card in the committed discard area
+        const newCardDiv = document.createElement("div");
+        newCardDiv.className = "card"; // Add your card's styles here (e.g., hidden, etc.)
+        newCardDiv.textContent = currentCard;
 
-        // Add the visual card to the committed discard area
-        discardPile.querySelector('.committed-area').appendChild(cardDiv);
+        // Add the new card to the committed discard area
+        discardPile.querySelector('.committed-area').appendChild(newCardDiv);
 
-        // Update the discard counter to reflect the number of cards in the committed area
+        // Update the discard counter to reflect the number of cards in the committed discard area
         discardPile.querySelector('.discard-counter').textContent = discardPile.querySelector(".committed-area").children.length;
 
-        // Now, remove the card from the original visible display area or hide it
-        const originalCard = document.getElementById("currentCard");
-        originalCard.textContent = ''; // Clear the current card display text
+        // Remove the current card's graphic from the original area
+        const originalCardElement = document.getElementById("currentCard");
+        originalCardElement.textContent = ''; // Clear the text content of the original card
+        originalCardElement.style.display = 'none'; // Hide the original card element
 
-        // Optionally, hide the original card div if it still exists on the page
-        originalCard.style.display = 'none';
-
-        // Update the index to move to the next card, if there is one
+        // Update the index to move to the next card (if available)
         currentCardIndex++;
         if (currentCardIndex < ranks.length) {
-            // Update the card display with the new card
-            const currentCardElement = document.getElementById("currentCard");
-            currentCardElement.textContent = ranks[currentCardIndex];
-            currentCardElement.style.display = 'block'; // Make sure it's visible again
+            // Update the current card display with the new card
+            originalCardElement.textContent = ranks[currentCardIndex];
+            originalCardElement.style.display = 'block'; // Show the next card
         }
     }
 });
