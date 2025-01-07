@@ -4,232 +4,173 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Card Game</title>
-    
     <style>
+        /* 2. CSS Styles */
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            gap: 20px;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
         }
-
         .buttons {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
+            margin-bottom: 20px;
         }
-
         button {
             padding: 10px 20px;
             font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            background-color: #007BFF;
-            color: white;
+            margin: 5px;
             cursor: pointer;
+            border-radius: 5px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
         }
-
         button:hover {
-            background-color: #0056b3;
+            background-color: #45a049;
         }
-
+        /* 2.3 Box Styling */
         .container {
             display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 800px;
         }
-
+        /* 2.4 Field and Discard Box Styling */
         .box {
-            border: 2px solid black;
-            border-radius: 5px;
-            margin: 10px;
-            padding: 10px;
             width: 200px;
             height: 250px;
+            border: 2px solid #333;
             display: flex;
-            flex-wrap: wrap;
-            align-content: flex-start;
-            overflow: hidden;
+            justify-content: center;
+            align-items: center;
             position: relative;
+            margin: 5px;
+            background-color: #f9f9f9;
         }
-
-        .discard-box {
-            border: 2px solid red;
-            position: relative;
-            width: 150px;
-            height: 150px;
-        }
-
-        .field-box {
-            border: 2px solid green;
-            position: relative;
-            width: 200px;
-            height: 150px;
-        }
-
+        /* 2.5 Card Styling */
         .card {
-            margin: 2px;
-            padding: 5px;
-            border: 1px solid black;
-            border-radius: 3px;
-            background-color: white;
-            text-align: center;
-            font-size: 14px;
-            cursor: grab;
-            user-select: none;
-            width: 30px;
-            height: 40px;
-        }
-
-        .hidden {
-            background-color: gray;
-            color: gray;
-        }
-
-        .dragging {
-            opacity: 0.5;
-        }
-
-        .committed-area {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            width: 100%;
-            height: 100%;
+            width: 50px;
+            height: 70px;
+            border: 1px solid #333;
+            margin: 5px;
             display: flex;
-            align-items: flex-end;
-            justify-content: flex-start;
-            gap: -5px; /* Overlapping effect */
-            pointer-events: none; /* Prevent dragging committed cards */
+            justify-content: center;
+            align-items: center;
+            background-color: #f1f1f1;
+            cursor: pointer;
+            font-size: 14px;
         }
-
-        .committed-card {
-            background-color: gray;
-            color: transparent;
-            border: 1px solid black;
-            width: 30px;
-            height: 40px;
+        .hidden {
+            visibility: hidden; /* Hide face-down cards */
         }
-
     </style>
 </head>
 <body>
+
+    <!-- 1. HTML Structure -->
     <div class="buttons">
-        <button id="playCardsButton">Play Cards</button>
-        <button id="dealCardsButton">Deal Cards</button>
+        <!-- 1.2.1 Play Cards Button -->
+        <button id="playCardsBtn">Play Cards</button>
+        <!-- 1.2.2 Deal Cards Button -->
+        <button id="dealCardsBtn">Deal Cards</button>
     </div>
 
     <div class="container">
-        <div id="player1" class="box"></div>
-        <div id="player2" class="box"></div>
-        <div id="box3" class="box"></div>
-        <div id="box4" class="box"></div>
-        <div id="field" class="field-box"></div> <!-- New field box -->
-        <div id="discard" class="discard-box">
+        <!-- 1.2.2 Player and Box Divs -->
+        <div id="player1" class="box" ondrop="handleDrop(event)" ondragover="handleDragOver(event)"></div>
+        <div id="player2" class="box" ondrop="handleDrop(event)" ondragover="handleDragOver(event)"></div>
+        <div id="box3" class="box" ondrop="handleDrop(event)" ondragover="handleDragOver(event)"></div>
+        <div id="box4" class="box" ondrop="handleDrop(event)" ondragover="handleDragOver(event)"></div>
+        <!-- 1.2.2 Field Box -->
+        <div id="field" class="box" ondrop="handleDrop(event)" ondragover="handleDragOver(event)"></div>
+        <!-- 1.2.2 Discard Box -->
+        <div id="discard" class="box" ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
             <div class="committed-area"></div>
         </div>
     </div>
 
     <script>
-        // Deck Setup (Same as before)
-        const suits = ["♥", "♦", "♣", "♠"];
-        const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+        // 3. JavaScript Logic
+        // 3.1 Deck Setup
         const deck = [];
-
-        suits.forEach((suit) => {
-            ranks.forEach((rank) => {
-                deck.push({ suit, rank, isRed: suit === "♥" || suit === "♦" });
+        const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades'];
+        const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        
+        // Initialize deck with cards
+        suits.forEach(suit => {
+            ranks.forEach(rank => {
+                deck.push({ suit, rank });
             });
         });
 
-        // Shuffle the deck
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
+        // 3.2 Shuffle Function
+        function shuffleDeck() {
+            for (let i = deck.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+                [deck[i], deck[j]] = [deck[j], deck[i]];
             }
         }
 
-        // Render Cards in a Box
-        function renderBox(boxId, cards, isHidden) {
-            const boxDiv = document.getElementById(boxId);
-            boxDiv.innerHTML = "";
-            cards.forEach((card) => {
-                const cardDiv = document.createElement("div");
-                cardDiv.className = "card";
-                cardDiv.draggable = true;
-                if (isHidden) {
-                    cardDiv.classList.add("hidden");
-                } else {
-                    cardDiv.classList.add(card.isRed ? "red" : "black");
-                    cardDiv.textContent = `${card.rank}${card.suit}`;
-                }
-                cardDiv.addEventListener("dragstart", handleDragStart);
-                cardDiv.addEventListener("dragend", handleDragEnd);
-                boxDiv.appendChild(cardDiv);
+        // 3.3 Render Box Function
+        function renderBox(boxId, cards) {
+            const box = document.getElementById(boxId);
+            box.innerHTML = ''; // Clear existing cards
+            cards.forEach(card => {
+                const cardDiv = document.createElement('div');
+                cardDiv.classList.add('card');
+                cardDiv.setAttribute('draggable', true);
+                cardDiv.innerText = `${card.rank} of ${card.suit}`;
+                cardDiv.addEventListener('dragstart', handleDragStart);
+                cardDiv.addEventListener('dragend', handleDragEnd);
+                box.appendChild(cardDiv);
             });
         }
 
-        // Handle Dragging Logic
-        let draggedCard = null;
+        // 3.5 Deal Cards Button
+        document.getElementById('dealCardsBtn').addEventListener('click', () => {
+            shuffleDeck();
+            const player1Cards = deck.slice(0, 26); // First half for Player 1
+            const player2Cards = deck.slice(26, 52); // Second half for Player 2
+            renderBox('player1', player1Cards);
+            renderBox('player2', player2Cards);
+        });
 
+        // 3.6 Play Cards Button
+        document.getElementById('playCardsBtn').addEventListener('click', () => {
+            const field = document.getElementById('field');
+            const discard = document.getElementById('discard');
+            const cardsInField = Array.from(field.children);
+
+            cardsInField.forEach(cardDiv => {
+                cardDiv.classList.add('hidden'); // Hide the card face-down
+                discard.appendChild(cardDiv); // Move it to discard
+            });
+        });
+
+        // 3.4 Drag and Drop Handling
         function handleDragStart(event) {
-            draggedCard = event.target;
-            event.target.classList.add("dragging");
+            event.dataTransfer.setData('text', event.target.innerText); // Store card data
         }
 
         function handleDragEnd(event) {
-            event.target.classList.remove("dragging");
-            draggedCard = null;
+            event.target.style.opacity = '1'; // Reset opacity
         }
 
         function handleDrop(event) {
             event.preventDefault();
-            if (draggedCard && event.target.classList.contains("box") || event.target.classList.contains("field-box")) {
-                event.target.appendChild(draggedCard);
-            }
+            const data = event.dataTransfer.getData('text');
+            const cardDiv = document.createElement('div');
+            cardDiv.classList.add('card');
+            cardDiv.innerText = data;
+            event.target.appendChild(cardDiv); // Add card to drop target
         }
 
         function handleDragOver(event) {
-            event.preventDefault();
+            event.preventDefault(); // Allow drop
         }
-
-        // Deal Cards Function
-        document.getElementById("dealCardsButton").addEventListener("click", () => {
-            shuffle(deck);
-            const player1Cards = deck.slice(0, 26);
-            const player2Cards = deck.slice(26, 52);
-
-            renderBox("player1", player1Cards, false); // Player 1
-            renderBox("player2", player2Cards, true);  // Player 2
-            document.getElementById("dealCardsButton").style.display = "none";
-        });
-
-        // Play Cards Logic
-        document.getElementById("playCardsButton").addEventListener("click", () => {
-            const field = document.getElementById("field");
-            const discardArea = document.querySelector("#discard .committed-area");
-
-            while (field.firstChild) {
-                const card = field.firstChild;
-                card.classList.add("hidden"); // Hide the card (face-down)
-                discardArea.appendChild(card);
-            }
-
-            // Add gap for visual stacking
-            discardArea.style.gap = "-5px";
-
-            // Optionally, you can implement a counter to show the number of discarded cards
-        });
-
-        // Add event listeners for drag/drop on boxes
-        document.querySelectorAll(".box, .field-box").forEach((box) => {
-            box.addEventListener("dragover", handleDragOver);
-            box.addEventListener("drop", handleDrop);
-        });
     </script>
 </body>
 </html>
