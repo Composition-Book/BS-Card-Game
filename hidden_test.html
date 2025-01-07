@@ -203,15 +203,18 @@
 
         // Section 10: Dragging Mechanics
         let draggedCard = null;
+        let isCardInPlay = false;
 
         function handleDragStart(event) {
             draggedCard = event.target;
             event.target.classList.add("dragging");
+            isCardInPlay = true;
         }
 
         function handleDragEnd(event) {
             event.target.classList.remove("dragging");
             draggedCard = null;
+            isCardInPlay = false;
         }
 
         // Section 11: Deal Cards Button Logic
