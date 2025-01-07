@@ -285,22 +285,24 @@
 
         // Section 14: Play Cards Button Logic
         document.getElementById("playCardsButton").addEventListener("click", () => {
-            const currentCard = document.getElementById("currentCard").textContent;
             const discardPile = document.getElementById("discard");
 
-            // Create a new card div and add it to the discard pile (face-down)
-            const cardDiv = document.createElement("div");
-            cardDiv.className = "card hidden";
-            cardDiv.textContent = currentCard;
+            // Move any dragged cards in the play field to the committed discard
+            const playField = document.querySelectorAll(".card.dragging");
 
-            discardPile.querySelector('.committed-area').appendChild(cardDiv);
+            playField.forEach(cardDiv => {
+                // Turn the card face down
+                cardDiv.classList.add("hidden");
+
+                // Add it to the committed discard area
+                discardPile.querySelector('.committed-area').appendChild(cardDiv);
+            });
+
+            // Condense the discard pile (group the cards in the committed area)
             discardPile.querySelector('.discard-counter').textContent = discardPile.querySelectorAll(".card").length;
 
-            // Condense the discard pile
-            lastPlay.push({ rank: currentCard });
-
-            // Hide the current card from display
-            document.getElementById("currentCard").textContent = '';
+            // Transition to the calling phase (if needed)
+            // Reset play field if necessary
         });
 
         // Section 15: Add Event Listeners to Boxes
