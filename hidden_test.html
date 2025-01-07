@@ -181,7 +181,7 @@
                     cardDiv.classList.add("hidden");
                 } else {
                     cardDiv.classList.add(card.isRed ? "red" : "black");
-                    cardDiv.textContent = ${card.rank}${card.suit};
+                    cardDiv.textContent = `${card.rank}${card.suit}`;
                 }
 
                 cardDiv.addEventListener("dragstart", handleDragStart);
