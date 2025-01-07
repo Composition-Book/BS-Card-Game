@@ -1,14 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Section 1: Metadata and Page Setup -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Card Game</title>
-    
-    <!-- Section 2: Styles -->
     <style>
-        /* Section 2.1: Global Styles */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
@@ -17,16 +13,13 @@
             align-items: center;
             gap: 20px;
         }
-
-        /* Section 2.2: Button Styles */
         .buttons {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 10px;
-            margin-top: 20px; /* Ensure the buttons are spaced and visible */
-}
-
+            margin-top: 20px;
+        }
         button {
             padding: 10px 20px;
             font-size: 16px;
@@ -35,22 +28,16 @@
             background-color: #007BFF;
             color: white;
             cursor: pointer;
-            z-index: 100; /* Ensures the button is on top */
         }
-
         button:hover {
             background-color: #0056b3;
         }
-
-        /* Section 2.3: Box and Card Styles */
         .container {
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
-           justify-content: center; /* Centers the card containers */
-
+            justify-content: center;
         }
-        
         .box {
             border: 2px solid black;
             border-radius: 5px;
@@ -61,25 +48,7 @@
             display: flex;
             flex-wrap: wrap;
             align-content: flex-start;
-            overflow: hidden;
         }
-
-        .discard-box {
-            border: 2px solid red;
-            position: relative;
-        }
-
-        .discard-counter {
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: white;
-            padding: 2px 5px;
-            font-weight: bold;
-            font-size: 16px;
-        }
-
         .card {
             margin: 2px;
             padding: 5px;
@@ -89,74 +58,33 @@
             text-align: center;
             font-size: 14px;
             cursor: grab;
-            user-select: none;
             width: 30px;
             height: 40px;
         }
-
-        /* Section 2.4: Special Styles for Hidden, Dragging, and Committed Cards */
         .hidden {
             background-color: gray;
             color: gray;
         }
-
         .red {
             color: red;
         }
-
         .black {
             color: black;
-        }
-
-        .dragging {
-            opacity: 0.5;
-        }
-
-        .committed-area {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: flex-end;
-            justify-content: flex-start;
-            gap: -20px; /* Overlapping effect */
-            pointer-events: none; /* Prevent dragging committed cards */
-        }
-
-        .committed-card {
-            background-color: gray;
-            color: transparent;
-            border: 1px solid black;
-            width: 30px;
-            height: 40px;
         }
     </style>
 </head>
 <body>
-    <!-- Section 3: Button Controls -->
+
+    <!-- Buttons -->
     <div class="buttons">
-        <button id="bsButton">BS!</button>
-        <button id="nextTurnButton">Next turn!</button>
-        <button id="playCardsButton">Play Cards!</button>
         <button id="dealCardsButton">Deal Cards</button>
     </div>
 
-    <!-- Section 4: Card Containers -->
+    <!-- Card Containers -->
     <div class="container">
         <div id="box1" class="box"></div>
         <div id="box2" class="box"></div>
         <div id="box3" class="box"></div>
-        <div id="discard" class="box discard-box">
-            <div class="discard-counter">0</div>
-            <div class="committed-area"></div>
-        </div>
-    </div>
-
-    <!-- Small box to display the current card -->
-    <div id="currentCardDisplay" style="width: 100px; height: 50px; border: 1px solid #000; text-align: center; font-size: 18px; padding: 10px;">
-        Current Card: <span id="currentCard">A</span>
     </div>
 
     <script>
@@ -165,7 +93,7 @@
         const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
         const deck = [];
 
-        // Section 6: Populate and Color Deck
+        // Populate the deck with cards
         suits.forEach((suit, suitIndex) => {
             ranks.forEach(rank => {
                 const isRed = suitIndex < 2; // Hearts and Diamonds are red
@@ -173,30 +101,21 @@
             });
         });
 
-// Section 5: Deck Creation
-const suits = ["♥", "♦", "♣", "♠"];
-const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
-const deck = [];
+        console.log("Deck created:", deck); // Debugging: Check if the deck is created correctly
 
-// Section 6: Populate and Color Deck
-suits.forEach((suit, suitIndex) => {
-  ranks.forEach(rank => {
-    const isRed = suitIndex < 2; // Hearts and Diamonds are red
-    deck.push({ suit, rank, isRed });
-  });
-});
+        // Section 7: Shuffle Deck
+        function shuffle(array) {
+            console.log("Shuffling deck..."); // Debugging: Check if shuffle is triggered
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+            }
+        }
 
-// Section 7: Shuffle Deck
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-}
-// Section 9: Render Cards in Boxes
+        // Section 9: Render Cards in Boxes
         const renderBox = (boxId, cards, isHidden) => {
             const boxDiv = document.getElementById(boxId);
-            boxDiv.innerHTML = "";
+            boxDiv.innerHTML = ""; // Clear the box before adding new cards
             cards.forEach(card => {
                 const cardDiv = document.createElement("div");
                 cardDiv.className = "card";
@@ -208,33 +127,28 @@ function shuffle(array) {
                 }
                 boxDiv.appendChild(cardDiv);
             });
+            console.log(`Rendered cards in ${boxId}:`, cards); // Debugging: Check cards in the box
         };
-// Section 11: Deal Cards Button Logic
-document.getElementById("dealCardsButton").addEventListener("click", () => {
-  shuffle(deck);
 
-  // Divide the shuffled deck evenly between the three boxes
-  box1Cards = deck.slice(0, 17);
-  box2Cards = deck.slice(17, 34);
-  box3Cards = deck.slice(34, 52);
+        // Section 11: Deal Cards Button Logic
+        document.getElementById("dealCardsButton").addEventListener("click", () => {
+            console.log("Deal Cards button clicked..."); // Debugging: Check if the button click is detected
+            shuffle(deck);
 
-  // Render the cards in their respective boxes
-  renderBox("box1", box1Cards, false); // Box 1 is face-up
-  renderBox("box2", box2Cards, true); // Box 2 is face-down
-  renderBox("box3", box3Cards, true); // Box 3 is face-down
+            // Divide the shuffled deck into three boxes
+            const box1Cards = deck.slice(0, 17);
+            const box2Cards = deck.slice(17, 34);
+            const box3Cards = deck.slice(34, 52);
 
-  // Hide the Deal button after distributing cards
-  document.getElementById("dealCardsButton").style.display = "none";
-});
+            // Render cards in each box
+            renderBox("box1", box1Cards, false); // Box 1 is face-up
+            renderBox("box2", box2Cards, true); // Box 2 is face-down
+            renderBox("box3", box3Cards, true); // Box 3 is face-down
 
-
-  // Section 12: Add Event Listeners to Boxes
-  document.querySelectorAll(".box").forEach(box => {
-    box.addEventListener("dragover", handleDragOver);
-    box.addEventListener("drop", handleDrop);
-  });
-
-</script>
+            // Hide the Deal button after dealing cards
+            document.getElementById("dealCardsButton").style.display = "none";
+        });
+    </script>
 
 </body>
 </html>
