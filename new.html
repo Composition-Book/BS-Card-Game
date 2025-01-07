@@ -293,25 +293,34 @@
             lastPlay = [];
         });
 
-        // Section 14: Play Cards Button Logic
-        document.getElementById("playCardsButton").addEventListener("click", () => {
-            const currentCard = document.getElementById("currentCard").textContent;
-            const discardPile = document.getElementById("discard");
+       // Section 14: Play Cards Button Logic
+document.getElementById("playCardsButton").addEventListener("click", () => {
+    const currentCard = document.getElementById("currentCard").textContent;
+    const discardPile = document.getElementById("discard");
 
-            // Create a new card div and add it to the discard pile (face-down)
-            const cardDiv = document.createElement("div");
-            cardDiv.className = "card hidden";
-            cardDiv.textContent = currentCard;
+    if (currentCard !== "") {
+        // Create a new card div and add it to the committed discard pile (inside the committed area)
+        const cardDiv = document.createElement("div");
+        cardDiv.className = "card hidden";
+        cardDiv.textContent = currentCard;
 
-            discardPile.querySelector('.committed-area').appendChild(cardDiv);
-            discardPile.querySelector('.discard-counter').textContent = discardPile.querySelectorAll(".card").length;
+        // Add card to committed discard area
+        discardPile.querySelector('.committed-area').appendChild(cardDiv);
 
-            // Condense the discard pile
-            lastPlay.push({ rank: currentCard });
+        // Update the discard counter to reflect the number of cards in the committed area
+        discardPile.querySelector('.discard-counter').textContent = discardPile.querySelector(".committed-area").children.length;
 
-            // Hide the current card from display
-            document.getElementById("currentCard").textContent = '';
-        });
+        // Remove the current card from the displayed card info (clear the current card)
+        document.getElementById("currentCard").textContent = '';
+
+        // Optionally, reset the current card logic or update it for the next play
+        currentCardIndex++;
+        if (currentCardIndex < ranks.length) {
+            const currentCardElement = document.getElementById("currentCard");
+            currentCardElement.textContent = ranks[currentCardIndex];
+        }
+    }
+});
 
         // Section 15: Add Event Listeners to Boxes
         document.querySelectorAll(".box").forEach(box => {
