@@ -1,158 +1,241 @@
-// HTML elements for the game
-const deckElement = document.getElementById('deck');
-const playerBoxes = [
-    document.getElementById('player1'),
-    document.getElementById('player2'),
-    document.getElementById('player3')
-];
-const fieldElement = document.getElementById('field');
-const discardPileElement = document.getElementById('discardPile');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Game</title>
 
-// Card suits and values
-const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
-const values = [
-    '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'
-];
-
-let deck = [];
-let gameState = {
-    playerHands: [[], [], []],
-    field: [],
-    discardPile: []
-};
-
-// Create and shuffle deck
-function initializeDeck() {
-    deck = [];
-    suits.forEach(suit => {
-        values.forEach(value => {
-            deck.push({ suit, value });
-        });
-    });
-    deck = shuffle(deck);
-}
-
-function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
-
-// Deal cards to players
-function dealCards() {
-    initializeDeck();
-    gameState.playerHands = [[], [], []];
-
-    for (let i = 0; i < deck.length; i++) {
-        gameState.playerHands[i % 3].push(deck[i]);
-    }
-
-    renderGameState();
-}
-
-// Render the game state
-function renderGameState() {
-    playerBoxes.forEach((box, index) => {
-        box.innerHTML = '';
-        gameState.playerHands[index].forEach(card => {
-            const cardElement = createCardElement(card, 'player');
-            box.appendChild(cardElement);
-        });
-    });
-
-    fieldElement.innerHTML = '';
-    gameState.field.forEach(card => {
-        const cardElement = createCardElement(card, 'field');
-        fieldElement.appendChild(cardElement);
-    });
-
-    discardPileElement.innerHTML = '';
-    gameState.discardPile.forEach(() => {
-        const cardElement = document.createElement('div');
-        cardElement.className = 'card back'; // Hidden cards in discard pile
-        discardPileElement.appendChild(cardElement);
-    });
-}
-
-// Create card elements for rendering
-function createCardElement(card, type) {
-    const cardElement = document.createElement('div');
-    cardElement.className = `card ${type}`;
-    cardElement.draggable = true;
-    cardElement.dataset.suit = card.suit;
-    cardElement.dataset.value = card.value;
-
-    // Show card details for player hands, hide for computer hands
-    if (type === 'player') {
-        cardElement.innerHTML = `${card.value} <span class="${card.suit}">&${card.suit};</span>`;
-    }
-
-    cardElement.addEventListener('dragstart', handleDragStart);
-    return cardElement;
-}
-
-// Drag-and-drop event handlers
-let draggedCard = null;
-
-function handleDragStart(event) {
-    draggedCard = event.target;
-}
-
-fieldElement.addEventListener('dragover', event => {
-    event.preventDefault();
-});
-
-fieldElement.addEventListener('drop', event => {
-    event.preventDefault();
-    if (draggedCard) {
-        const card = {
-            suit: draggedCard.dataset.suit,
-            value: draggedCard.dataset.value
-        };
-        gameState.field.push(card);
-        const playerIndex = playerBoxes.findIndex(box => box.contains(draggedCard));
-        if (playerIndex >= 0) {
-            gameState.playerHands[playerIndex] = gameState.playerHands[playerIndex].filter(
-                c => c.suit !== card.suit || c.value !== card.value
-            );
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            color: blue;
         }
-        renderGameState();
-    }
-});
 
-discardPileElement.addEventListener('dragover', event => {
-    event.preventDefault();
-});
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
 
-discardPileElement.addEventListener('drop', event => {
-    event.preventDefault();
-    if (draggedCard) {
-        const card = {
-            suit: draggedCard.dataset.suit,
-            value: draggedCard.dataset.value
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .box {
+            border: 2px solid black;
+            border-radius: 5px;
+            margin: 10px;
+            padding: 10px;
+            width: 300px;
+            height: 400px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            overflow: hidden;
+        }
+
+        .discard-box {
+            position: relative;
+            width: 300px;
+            height: 200px;
+            background-color: white;
+            border: 2px solid red;
+            margin: 50px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .discard-counter {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: black;
+            border: 2px solid black;
+            padding: 5px 10px;
+            font-weight: bold;
+            font-size: 16px;
+            white-space: nowrap;
+            min-width: 50px;
+            min-height: 20px;
+            text-align: center;
+            color: white;
+            z-index: 10;
+        }
+
+        .card {
+            margin: 2px;
+            padding: 5px;
+            border: 1px solid black;
+            border-radius: 3px;
+            background-color: white;
+            text-align: center;
+            font-size: 14px;
+            cursor: grab;
+            user-select: none;
+            width: 30px;
+            height: 40px;
+        }
+
+        .hidden {
+            background-color: gray;
+            color: gray;
+        }
+
+        .red {
+            color: red;
+        }
+
+        .black {
+            color: black;
+        }
+
+        .committed-area {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-start;
+            gap: -20px;
+            pointer-events: none;
+        }
+
+        .committed-card {
+            background-color: gray;
+            color: transparent;
+            border: 1px solid black;
+            width: 30px;
+            height: 40px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Section: Button Controls -->
+    <div class="buttons">
+        <button id="bsButton">BS!</button>
+        <button id="playCardsButton">Play Cards!</button>
+        <button id="dealCardsButton">Deal Cards</button>
+    </div>
+
+    <!-- Section: Card Containers -->
+    <div class="container">
+        <div id="box1" class="box"></div>
+        <div id="box2" class="box"></div>
+        <div id="box3" class="box"></div>
+        <div id="discard" class="box discard-box">
+            <div class="discard-counter">0</div>
+            <div class="committed-area"></div>
+        </div>
+    </div>
+
+    <div id="currentCardDisplay" style="width: 100px; height: 50px; border: 1px solid #000; text-align: center; font-size: 18px; padding: 10px;">
+        Current Card: <span id="currentCard">A</span>
+    </div>
+
+    <script>
+        const suits = ["♥", "♦", "♣", "♠"];
+        const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+        const deck = [];
+
+        suits.forEach((suit, suitIndex) => {
+            ranks.forEach(rank => {
+                const isRed = suitIndex < 2; // Hearts and Diamonds are red
+                deck.push({ suit, rank, isRed });
+            });
+        });
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        let box1Cards = [];
+        let box2Cards = [];
+        let box3Cards = [];
+        let currentCardIndex = 0;
+
+        const renderBox = (boxId, cards, isHidden) => {
+            const boxDiv = document.getElementById(boxId);
+            boxDiv.innerHTML = "";
+            cards.forEach(card => {
+                const cardDiv = document.createElement("div");
+                cardDiv.className = "card";
+                cardDiv.draggable = true;
+                if (isHidden) {
+                    cardDiv.classList.add("hidden");
+                } else {
+                    cardDiv.classList.add(card.isRed ? "red" : "black");
+                    cardDiv.textContent = `${card.rank}${card.suit}`;
+                }
+                boxDiv.appendChild(cardDiv);
+            });
         };
-        gameState.discardPile.push(card);
-        gameState.field = gameState.field.filter(
-            c => c.suit !== card.suit || c.value !== card.value
-        );
-        renderGameState();
-    }
-});
 
-// Button actions
-document.getElementById('dealButton').addEventListener('click', dealCards);
-document.getElementById('playButton').addEventListener('click', () => {
-    gameState.discardPile.push(...gameState.field);
-    gameState.field = [];
-    renderGameState();
-});
-document.getElementById('resetButton').addEventListener('click', () => {
-    gameState = {
-        playerHands: [[], [], []],
-        field: [],
-        discardPile: []
-    };
-    renderGameState();
-});
+        document.getElementById("dealCardsButton").addEventListener("click", () => {
+            shuffle(deck);
+            box1Cards = deck.slice(0, 17);
+            box2Cards = deck.slice(17, 34);
+            box3Cards = deck.slice(34, 52);
+            renderBox("box1", box1Cards, false);
+            renderBox("box2", box2Cards, true);
+            renderBox("box3", box3Cards, true);
+            document.getElementById("dealCardsButton").style.display = "none";
+        });
+
+        document.getElementById("playCardsButton").addEventListener("click", () => {
+            const discardBox = document.getElementById("discard");
+            const discardCounter = discardBox.querySelector(".discard-counter");
+            const committedArea = discardBox.querySelector(".committed-area");
+
+            const discardCards = Array.from(discardBox.children).filter(child => child.classList.contains('card'));
+            discardCards.forEach(cardDiv => {
+                const committedCard = document.createElement("div");
+                committedCard.className = "committed-card";
+                committedCard.textContent = cardDiv.textContent;
+                committedArea.appendChild(committedCard);
+                cardDiv.remove();
+            });
+
+            discardCounter.textContent = committedArea.children.length;
+
+            if (currentCardIndex < ranks.length - 1) {
+                currentCardIndex++;
+            } else {
+                currentCardIndex = 0;
+            }
+            document.getElementById("currentCard").textContent = ranks[currentCardIndex];
+        });
+
+        document.getElementById("bsButton").addEventListener("click", () => {
+            alert('BS! This button would check a move and reset accordingly.');
+        });
+    </script>
+</body>
+</html>
