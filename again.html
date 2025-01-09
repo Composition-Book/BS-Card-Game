@@ -198,7 +198,28 @@
                 boxDiv.appendChild(cardDiv);
             });
         };
+        let draggedCard = null;
 
+        function handleDragStart(event) {
+            draggedCard = event.target;
+            event.target.classList.add("dragging");
+        }
+
+        function handleDragEnd(event) {
+            event.target.classList.remove("dragging");
+            draggedCard = null;
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            if (draggedCard && event.target.classList.contains("box")) {
+                event.target.appendChild(draggedCard);
+            }
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+        }
         // Shuffle, divide evenly, and display cards when "Deal Cards!" is clicked
         document.getElementById("dealCardsButton").addEventListener("click", () => {
             shuffle(deck);
