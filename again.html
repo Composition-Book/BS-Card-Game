@@ -157,7 +157,8 @@
         Current Card: <span id="currentCard">A</span>
     </div>
 
-    <script>
+   <script>
+    document.addEventListener("DOMContentLoaded", function() {
         const suits = ["♥", "♦", "♣", "♠"];
         const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
         const deck = [];
@@ -205,7 +206,7 @@
             const cardsPerBox = Math.floor(deck.length / 3); // Base cards per box
             const remainder = deck.length % 3; // Leftover cards after even division
 
-        // Distribute leftover cards more evenly
+            // Distribute leftover cards more evenly
             box1Cards = deck.slice(0, cardsPerBox + (remainder > 0 ? 1 : 0)); // Add 1 extra card if there's leftover
             box2Cards = deck.slice(box1Cards.length, box1Cards.length + cardsPerBox + (remainder > 1 ? 1 : 0)); // Add 1 extra card if there's still leftover
             box3Cards = deck.slice(box1Cards.length + box2Cards.length); // The rest goes here
@@ -213,34 +214,32 @@
             renderBox("box1", box1Cards, false);
             renderBox("box2", box2Cards, true);
             renderBox("box3", box3Cards, true);
-        document.getElementById("dealCardsButton").style.display = "none";
-    });
-
+            document.getElementById("dealCardsButton").style.display = "none";
+        });
 
         document.getElementById("playCardsButton").addEventListener("click", () => {
-                const discardBox = document.getElementById("discard");
-                const discardCounter = discardBox.querySelector(".discard-counter");
-                const committedArea = discardBox.querySelector(".committed-area");
+            const discardBox = document.getElementById("discard");
+            const discardCounter = discardBox.querySelector(".discard-counter");
+            const committedArea = discardBox.querySelector(".committed-area");
 
             // Get all the cards in the discard box
-                const discardCards = Array.from(discardBox.children).filter(child => child.classList.contains('card'));
-    
-        discardCards.forEach(cardDiv => {
+            const discardCards = Array.from(discardBox.children).filter(child => child.classList.contains('card'));
+
+            discardCards.forEach(cardDiv => {
                 // Create a new div for each committed card and add it to the committed area
                 const committedCard = document.createElement("div");
                 committedCard.className = "committed-card";
                 committedCard.textContent = cardDiv.textContent;
                 committedArea.appendChild(committedCard);
-        
-                    // Remove the card from the discard box
-                    cardDiv.remove();
+
+                // Remove the card from the discard box
+                cardDiv.remove();
             });
 
-                    // Update the discard counter
-                    discardCounter.textContent = discardCards.length;
-            });
+            // Update the discard counter
+            discardCounter.textContent = discardCards.length;
 
-
+            // Update the current card display
             if (currentCardIndex < ranks.length - 1) {
                 currentCardIndex++;
             } else {
@@ -250,44 +249,45 @@
         });
 
         document.getElementById("bsButton").addEventListener("click", () => {
-    const committedArea = document.querySelector(".committed-area");
-    const discardBox = document.getElementById("discard");
-    const discardCounter = discardBox.querySelector(".discard-counter");
-    const currentCardRank = document.getElementById("currentCard").textContent;
+            const committedArea = document.querySelector(".committed-area");
+            const discardBox = document.getElementById("discard");
+            const discardCounter = discardBox.querySelector(".discard-counter");
+            const currentCardRank = document.getElementById("currentCard").textContent;
 
-    // Get all committed cards
-    const committedCards = Array.from(committedArea.children);
-    let allMatch = true;
+            // Get all committed cards
+            const committedCards = Array.from(committedArea.children);
+            let allMatch = true;
 
-    // Check if all committed cards match the current card rank
-    committedCards.forEach(cardDiv => {
-        if (!cardDiv.textContent.includes(currentCardRank)) {
-            allMatch = false; // If any card doesn't match, set allMatch to false
-        }
+            // Check if all committed cards match the current card rank
+            committedCards.forEach(cardDiv => {
+                if (!cardDiv.textContent.includes(currentCardRank)) {
+                    allMatch = false; // If any card doesn't match, set allMatch to false
+                }
+            });
+
+            // Add cards to the appropriate boxes
+            committedCards.forEach(cardDiv => {
+                const newCardDiv = document.createElement("div");
+                newCardDiv.className = "card";
+                newCardDiv.textContent = cardDiv.textContent;
+
+                if (allMatch) {
+                    // If all cards match, add to box 1
+                    document.getElementById("box1").appendChild(newCardDiv);
+                } else {
+                    // If any card doesn't match, add to box 2
+                    document.getElementById("box2").appendChild(newCardDiv);
+                }
+
+                // Remove the card from the committed area
+                cardDiv.remove();
+            });
+
+            // Reset the discard counter and committed area
+            discardCounter.textContent = "0"; // Reset the discard counter to 0
+        });
     });
+</script>
 
-    // Add cards to the appropriate boxes
-    committedCards.forEach(cardDiv => {
-        const newCardDiv = document.createElement("div");
-        newCardDiv.className = "card";
-        newCardDiv.textContent = cardDiv.textContent;
-
-        if (allMatch) {
-            // If all cards match, add to box 1
-            document.getElementById("box1").appendChild(newCardDiv);
-        } else {
-            // If any card doesn't match, add to box 2
-            document.getElementById("box2").appendChild(newCardDiv);
-        }
-
-        // Remove the card from the committed area
-        cardDiv.remove();
-    });
-
-    // Reset the discard counter and committed area
-    discardCounter.textContent = "0"; // Reset the discard counter to 0
-});
-
-    </script>
 </body>
 </html>
