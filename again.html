@@ -244,24 +244,7 @@
             box.addEventListener("dragover", handleDragOver);
             box.addEventListener("drop", handleDrop);
         });
-        const handleDrop = (event) => {
-            event.preventDefault();
-            if (draggedCard) {
-                event.target.appendChild(draggedCard);
-            }
-        };
-
-        const handleDragOver = (event) => {
-            event.preventDefault();
-        };
-
-        // Add event listeners to boxes
-        const boxes = document.querySelectorAll(".box");
-        boxes.forEach((box) => {
-            box.addEventListener("dragover", handleDragOver);
-            box.addEventListener("drop", handleDrop);
-        });
-
+    
         // Shuffle, divide evenly, and display cards when "Deal Cards!" is clicked
         document.getElementById("dealCardsButton").addEventListener("click", () => {
             shuffle(deck);
