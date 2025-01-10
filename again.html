@@ -42,10 +42,7 @@
             gap: 20px;
             flex-wrap: wrap;
         }
-        
-        .dragging {
-            opacity: 0.5;
-        }
+
         .box {
             border: 2px solid black;
             border-radius: 5px;
@@ -154,11 +151,6 @@
             <div class="committed-area"></div>
         </div>
     </div>
-    
-    <div class="card" draggable="true">Card 1</div>
-    <div class="card" draggable="true">Card 2</div>
-    <div class="box">Drop Zone 1</div>
-    <div class="box">Drop Zone 2</div>
 
     <div id="currentCardDisplay" style="width: 100px; height: 50px; border: 1px solid #000; text-align: center; font-size: 18px; padding: 10px;">
         Current Card: <span id="currentCard">A</span>
@@ -189,22 +181,32 @@
         let box3Cards = [];
         let currentCardIndex = 0;
 
-        const renderBox = (boxId, cards, isHidden) => {
-            const boxDiv = document.getElementById(boxId);
-            boxDiv.innerHTML = "";
-            cards.forEach(card => {
-                const cardDiv = document.createElement("div");
-                cardDiv.className = "card";
-                cardDiv.draggable = true;
-                if (isHidden) {
-                    cardDiv.classList.add("hidden");
-                } else {
-                    cardDiv.classList.add(card.isRed ? "red" : "black");
-                    cardDiv.textContent = `${card.rank}${card.suit}`;
-                }
-                boxDiv.appendChild(cardDiv);
-            });
-        };
+    const renderBox = (boxId, cards, isHidden) => {
+    const boxDiv = document.getElementById(boxId);
+        boxDiv.innerHTML = ""; // Clear the box
+
+    cards.forEach((card) => {
+        const cardDiv = document.createElement("div");
+        cardDiv.className = "card";
+        cardDiv.draggable = true;
+
+        // Handle hidden or visible card styling
+        if (isHidden) {
+            cardDiv.classList.add("hidden");
+        } else {
+            cardDiv.classList.add(card.isRed ? "red" : "black");
+            cardDiv.textContent = `${card.rank}${card.suit}`;
+        }
+
+        // Attach drag-and-drop event listeners
+        cardDiv.addEventListener("dragstart", handleDragStart);
+        cardDiv.addEventListener("dragend", handleDragEnd);
+
+        // Append the card to the box
+        boxDiv.appendChild(cardDiv);
+    });
+};
+
         let draggedCard = null;
 
         function handleDragStart(event) {
@@ -239,6 +241,23 @@
         });
 
         document.querySelectorAll(".box").forEach(box => {
+            box.addEventListener("dragover", handleDragOver);
+            box.addEventListener("drop", handleDrop);
+        });
+        const handleDrop = (event) => {
+            event.preventDefault();
+            if (draggedCard) {
+                event.target.appendChild(draggedCard);
+            }
+        };
+
+        const handleDragOver = (event) => {
+            event.preventDefault();
+        };
+
+        // Add event listeners to boxes
+        const boxes = document.querySelectorAll(".box");
+        boxes.forEach((box) => {
             box.addEventListener("dragover", handleDragOver);
             box.addEventListener("drop", handleDrop);
         });
