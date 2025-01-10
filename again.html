@@ -42,7 +42,10 @@
             gap: 20px;
             flex-wrap: wrap;
         }
-
+        
+        .dragging {
+            opacity: 0.5;
+        }
         .box {
             border: 2px solid black;
             border-radius: 5px;
@@ -84,7 +87,6 @@
             color: white;
             z-index: 10;
         }
-
         .card {
             margin: 2px;
             padding: 5px;
@@ -152,6 +154,11 @@
             <div class="committed-area"></div>
         </div>
     </div>
+    
+    <div class="card" draggable="true">Card 1</div>
+    <div class="card" draggable="true">Card 2</div>
+    <div class="box">Drop Zone 1</div>
+    <div class="box">Drop Zone 2</div>
 
     <div id="currentCardDisplay" style="width: 100px; height: 50px; border: 1px solid #000; text-align: center; font-size: 18px; padding: 10px;">
         Current Card: <span id="currentCard">A</span>
@@ -203,23 +210,39 @@
         function handleDragStart(event) {
             draggedCard = event.target;
             event.target.classList.add("dragging");
+            console.log("Drag started:", draggedCard.textContent);
         }
 
         function handleDragEnd(event) {
             event.target.classList.remove("dragging");
             draggedCard = null;
+            console.log("Drag ended.");
         }
 
         function handleDrop(event) {
             event.preventDefault();
             if (draggedCard && event.target.classList.contains("box")) {
                 event.target.appendChild(draggedCard);
+                console.log("Card dropped in box:", event.target);
             }
         }
 
         function handleDragOver(event) {
-            event.preventDefault();
+            event.preventDefault(); // Required to allow dropping
+            console.log("Drag over box:", event.target);
         }
+
+        // Attach event listeners
+        document.querySelectorAll(".card").forEach(card => {
+            card.addEventListener("dragstart", handleDragStart);
+            card.addEventListener("dragend", handleDragEnd);
+        });
+
+        document.querySelectorAll(".box").forEach(box => {
+            box.addEventListener("dragover", handleDragOver);
+            box.addEventListener("drop", handleDrop);
+        });
+
         // Shuffle, divide evenly, and display cards when "Deal Cards!" is clicked
         document.getElementById("dealCardsButton").addEventListener("click", () => {
             shuffle(deck);
@@ -237,7 +260,7 @@
             renderBox("box3", box3Cards, true);
             document.getElementById("dealCardsButton").style.display = "none";
         });
-
+        
         document.getElementById("playCardsButton").addEventListener("click", () => {
             const discardBox = document.getElementById("discard");
             const discardCounter = discardBox.querySelector(".discard-counter");
